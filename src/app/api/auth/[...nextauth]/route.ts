@@ -25,16 +25,16 @@ export const authOptions = {
           if (!isMatch) return null;
 
           // Check status for non-admin users
-          if (user.role !== 'admin' && user.status !== 'accepted') return null;
+          if (user.type !== 'Admin' && user.status !== 'accepted') return null;
 
           return {
             id: user._id.toString(),
             name: user.name,
             email: user.email,
+            type: user.type,
             role: user.role,
             status: user.status,
-            avatar: user.avatar,
-            menuPermissions: user.menuPermissions
+            avatar: user.avatar
           };
         } catch (error) {
           console.error('Auth error:', error);
@@ -48,10 +48,10 @@ export const authOptions = {
     async jwt({ token, user }: any) {
       if (user) {
         token.name = user.name;
+        token.type = user.type;
         token.role = user.role;
         token.status = user.status;
         token.avatar = user.avatar;
-        token.menuPermissions = user.menuPermissions;
       }
       return token;
     },
@@ -59,10 +59,10 @@ export const authOptions = {
       if (session.user) {
         session.user.id = token.sub!;
         session.user.name = token.name as string;
+        session.user.type = token.type as string;
         session.user.role = token.role as string;
         session.user.status = token.status as string;
         session.user.avatar = token.avatar as string;
-        session.user.menuPermissions = token.menuPermissions as string[];
       }
       return session;
     }

@@ -9,9 +9,9 @@ import { toast } from 'sonner';
 interface User {
   _id: string;
   email: string;
-  role: string;
+  type: string;
+  role?: string;
   status: 'pending' | 'accepted' | 'rejected';
-  menuPermissions: string[];
   createdAt: string;
 }
 
@@ -23,7 +23,7 @@ export default function AdminPage() {
   useEffect(() => {
     if (status === 'loading') return;
     
-    if (!session || (session.user as any).role !== 'admin') {
+    if (!session || (session.user as any).type !== 'Admin') {
       redirect('/dashboard');
     }
     
@@ -50,7 +50,7 @@ export default function AdminPage() {
     }
   };
 
-  const handleUpdateUser = async (userId: string, updates: { status?: string; menuPermissions?: string[] }) => {
+  const handleUpdateUser = async (userId: string, updates: { status?: string; role?: string; type?: string }) => {
     try {
       const response = await fetch('/api/users', {
         method: 'PATCH',
@@ -84,7 +84,7 @@ export default function AdminPage() {
         
         {/* Debug info */}
         <div className="mt-4 p-4 rounded text-sm">
-          <p><strong>Session:</strong> {session?.user?.email} ({(session?.user as any)?.role})</p>
+          <p><strong>Session:</strong> {session?.user?.email} ({(session?.user as any)?.type})</p>
           <p><strong>Users Found:</strong> {users.length}</p>
         </div>
       </div>

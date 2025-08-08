@@ -39,9 +39,9 @@ export async function GET(request: NextRequest) {
         name: user.name,
         email: user.email,
         avatar: user.avatar,
+        type: user.type,
         role: user.role,
         status: user.status,
-        menuPermissions: user.menuPermissions,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt
       }

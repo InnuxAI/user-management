@@ -10,7 +10,7 @@ export default function SignupPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSignup = async (data: { email: string; password: string; role: string }) => {
+  const handleSignup = async (data: { email: string; password: string }) => {
     setIsLoading(true);
     
     try {

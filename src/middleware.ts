@@ -19,9 +19,9 @@ export default withAuth(
           return !!token;
         }
         
-        // Admin routes require admin role
+        // Admin routes require Admin type
         if (pathname.startsWith('/admin')) {
-          return token?.role === 'admin';
+          return token?.type === 'Admin';
         }
         
         return true;

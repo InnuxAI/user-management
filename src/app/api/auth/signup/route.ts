@@ -5,11 +5,11 @@ import User from '@/lib/models/User';
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password, role } = await request.json();
+    const { email, password } = await request.json();
     
-    if (!email || !password || !role) {
+    if (!email || !password) {
       return NextResponse.json(
-        { message: 'All fields are required' }, 
+        { message: 'Email and password are required' }, 
         { status: 400 }
       );
     }
@@ -24,17 +24,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check if this is the first user - if so, make them an admin
+    const userCount = await User.countDocuments();
+    const isFirstUser = userCount === 0;
+
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = new User({ 
       email, 
       password: hashedPassword, 
-      role,
-      status: role === 'admin' ? 'accepted' : 'pending'
+      type: isFirstUser ? 'Admin' : 'User',
+      role: isFirstUser ? 'super' : undefined,
+      status: isFirstUser ? 'accepted' : 'pending'
     });
     await user.save();
 
     return NextResponse.json(
-      { message: 'User created successfully' }, 
+      { 
+        message: isFirstUser ? 'Admin account created successfully' : 'User created successfully. Please wait for admin approval.',
+        isFirstUser 
+      }, 
       { status: 201 }
     );
   } catch (error) {

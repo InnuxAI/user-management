@@ -61,19 +61,19 @@ import {
 interface User {
   _id: string;
   email: string;
-  role: string;
+  type: string;
+  role?: string;
   status: 'pending' | 'accepted' | 'rejected';
-  menuPermissions: string[];
   createdAt: string;
 }
 
 interface UserDataTableProps {
   data: User[];
-  onUpdateUser: (userId: string, updates: { status?: string; menuPermissions?: string[] }) => Promise<void>;
+  onUpdateUser: (userId: string, updates: { status?: string; role?: string; type?: string }) => Promise<void>;
 }
 
 const columns = (
-  onUpdateUser: (userId: string, updates: { status?: string; menuPermissions?: string[] }) => Promise<void>
+  onUpdateUser: (userId: string, updates: { status?: string; role?: string; type?: string }) => Promise<void>
 ): ColumnDef<User>[] => [
   {
     id: "select",
@@ -110,13 +110,71 @@ const columns = (
     enableHiding: false,
   },
   {
+    accessorKey: "type",
+    header: "Type",
+    cell: ({ row }) => (
+      <div className="w-32">
+        <Select
+          value={row.original.type}
+          onValueChange={async (value) => {
+            try {
+              await onUpdateUser(row.original._id, { type: value });
+              toast.success("User type updated successfully");
+            } catch (error) {
+              toast.error("Failed to update user type");
+            }
+          }}
+        >
+          <SelectTrigger className="w-24">
+            <SelectValue>
+              <Badge variant="outline" className="text-muted-foreground px-1.5 capitalize">
+                {row.original.type}
+              </Badge>
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="User">User</SelectItem>
+            <SelectItem value="Admin">Admin</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+    ),
+  },
+  {
     accessorKey: "role",
     header: "Role",
     cell: ({ row }) => (
-      <div className="w-32">
-        <Badge variant="outline" className="text-muted-foreground px-1.5 capitalize">
-          {row.original.role}
-        </Badge>
+      <div className="w-40">
+        <Select
+          value={row.original.role || "none"}
+          onValueChange={async (value) => {
+            try {
+              await onUpdateUser(row.original._id, { role: value === 'none' ? undefined : value });
+              toast.success("User role updated successfully");
+            } catch (error) {
+              toast.error("Failed to update user role");
+            }
+          }}
+        >
+          <SelectTrigger className="w-36">
+            <SelectValue placeholder="No role">
+              {row.original.role ? (
+                <Badge variant="secondary" className="text-muted-foreground px-1.5 capitalize">
+                  {row.original.role}
+                </Badge>
+              ) : (
+                <span className="text-muted-foreground text-sm">No role</span>
+              )}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">No role</SelectItem>
+            <SelectItem value="super">Super</SelectItem>
+            <SelectItem value="Finance">Finance</SelectItem>
+            <SelectItem value="HR">HR</SelectItem>
+            <SelectItem value="Sales">Sales</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
     ),
   },
@@ -180,30 +238,6 @@ const columns = (
     },
   },
   {
-    accessorKey: "menuPermissions",
-    header: "Permissions",
-    cell: ({ row }) => (
-      <div className="max-w-48">
-        {row.original.menuPermissions.length > 0 ? (
-          <div className="flex flex-wrap gap-1">
-            {row.original.menuPermissions.slice(0, 3).map((permission) => (
-              <Badge key={permission} variant="secondary" className="text-xs">
-                {permission}
-              </Badge>
-            ))}
-            {row.original.menuPermissions.length > 3 && (
-              <Badge variant="secondary" className="text-xs">
-                +{row.original.menuPermissions.length - 3}
-              </Badge>
-            )}
-          </div>
-        ) : (
-          <span className="text-muted-foreground text-sm">No permissions</span>
-        )}
-      </div>
-    ),
-  },
-  {
     accessorKey: "createdAt",
     header: "Joined",
     cell: ({ row }) => (
@@ -227,7 +261,7 @@ const columns = (
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-40">
-          <DropdownMenuItem>Edit Permissions</DropdownMenuItem>
+          <DropdownMenuItem>Edit User</DropdownMenuItem>
           <DropdownMenuItem>Send Email</DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem variant="destructive">Delete User</DropdownMenuItem>

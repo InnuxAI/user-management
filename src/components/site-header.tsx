@@ -21,7 +21,7 @@ export function SiteHeader() {
         />
         <h1 className="text-base font-medium">User Management System</h1>
         <div className="ml-auto flex items-center gap-2">
-          {(session?.user as any)?.role === 'admin' && (
+          {(session?.user as any)?.type === 'Admin' && (
             <Button variant="ghost" asChild size="sm">
               <Link href="/admin">
                 Admin Panel
@@ -47,7 +47,7 @@ export function SiteHeader() {
                 <div className="flex flex-col space-y-1 p-2">
                   <p className="text-sm font-medium leading-none">{session.user?.email}</p>
                   <p className="text-xs leading-none text-muted-foreground">
-                    {(session.user as any)?.role}
+                    {(session.user as any)?.type} {(session.user as any)?.role && `- ${(session.user as any)?.role}`}
                   </p>
                 </div>
                 <DropdownMenuItem onClick={() => signOut()}>

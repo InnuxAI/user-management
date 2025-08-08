@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
@@ -13,9 +12,9 @@ import { toast } from 'sonner';
 interface User {
   _id: string;
   email: string;
-  role: string;
+  type: string;
+  role?: string;
   status: 'pending' | 'accepted' | 'rejected';
-  menuPermissions: string[];
   createdAt: string;
 }
 
@@ -24,18 +23,11 @@ interface UserCardProps {
   onUpdate: () => void;
 }
 
-const MENU_OPTIONS = [
-  'dashboard',
-  'analytics',
-  'reports',
-  'settings',
-  'users',
-  'billing'
-];
+const ROLE_OPTIONS = ['super', 'Finance', 'HR', 'Sales'];
 
 export function UserCard({ user, onUpdate }: UserCardProps) {
   const [isUpdating, setIsUpdating] = useState(false);
-  const [selectedPermissions, setSelectedPermissions] = useState(user.menuPermissions);
+  const [selectedRole, setSelectedRole] = useState(user.role || 'none');
 
   const updateUserStatus = async (status: string) => {
     setIsUpdating(true);
@@ -61,7 +53,7 @@ export function UserCard({ user, onUpdate }: UserCardProps) {
     }
   };
 
-  const updateMenuPermissions = async () => {
+  const updateUserType = async (type: string) => {
     setIsUpdating(true);
     try {
       const response = await fetch('/api/users', {
@@ -69,27 +61,43 @@ export function UserCard({ user, onUpdate }: UserCardProps) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ userId: user._id, menuPermissions: selectedPermissions }),
+        body: JSON.stringify({ userId: user._id, type }),
       });
 
       if (response.ok) {
-        toast.success('Menu permissions updated successfully');
+        toast.success('User type updated successfully');
         onUpdate();
       } else {
-        toast.error('Failed to update menu permissions');
+        toast.error('Failed to update user type');
       }
     } catch (error) {
-      toast.error('Failed to update menu permissions');
+      toast.error('Failed to update user type');
     } finally {
       setIsUpdating(false);
     }
   };
 
-  const handlePermissionChange = (permission: string, checked: boolean) => {
-    if (checked) {
-      setSelectedPermissions([...selectedPermissions, permission]);
-    } else {
-      setSelectedPermissions(selectedPermissions.filter(p => p !== permission));
+  const updateUserRole = async () => {
+    setIsUpdating(true);
+    try {
+      const response = await fetch('/api/users', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId: user._id, role: selectedRole === 'none' ? undefined : selectedRole }),
+      });
+
+      if (response.ok) {
+        toast.success('User role updated successfully');
+        onUpdate();
+      } else {
+        toast.error('Failed to update user role');
+      }
+    } catch (error) {
+      toast.error('Failed to update user role');
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -110,10 +118,34 @@ export function UserCard({ user, onUpdate }: UserCardProps) {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
+          <div>
+            <p className="text-sm text-gray-600">Type</p>
+            <Select 
+              value={user.type} 
+              onValueChange={(value) => updateUserType(value)}
+              disabled={isUpdating}
+            >
+              <SelectTrigger className="w-24">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="User">User</SelectItem>
+                <SelectItem value="Admin">Admin</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           <div>
             <p className="text-sm text-gray-600">Role</p>
-            <p className="font-medium">{user.role}</p>
+            <p className="font-medium">
+              {user.role ? (
+                <Badge variant="secondary" className="text-xs">
+                  {user.role}
+                </Badge>
+              ) : (
+                <span className="text-muted-foreground text-sm">No role</span>
+              )}
+            </p>
           </div>
           <div>
             <p className="text-sm text-gray-600">Joined</p>
@@ -142,39 +174,35 @@ export function UserCard({ user, onUpdate }: UserCardProps) {
             <Drawer>
               <DrawerTrigger asChild>
                 <Button variant="outline" size="sm">
-                  Manage Permissions
+                  Manage Role
                 </Button>
               </DrawerTrigger>
               <DrawerContent>
                 <DrawerHeader>
-                  <DrawerTitle>Menu Permissions for {user.email}</DrawerTitle>
+                  <DrawerTitle>Assign Role to {user.email}</DrawerTitle>
                 </DrawerHeader>
                 <div className="space-y-4 p-4">
                   <div className="text-sm text-gray-600">
-                    Select which menu items this user can access:
+                    Select a role for this user:
                   </div>
                   <div className="space-y-3">
-                    {MENU_OPTIONS.map((permission) => (
-                      <div key={permission} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={permission}
-                          checked={selectedPermissions.includes(permission)}
-                          onCheckedChange={(checked) => 
-                            handlePermissionChange(permission, checked as boolean)
-                          }
-                        />
-                        <Label
-                          htmlFor={permission}
-                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 capitalize"
-                        >
-                          {permission}
-                        </Label>
-                      </div>
-                    ))}
+                    <Select value={selectedRole} onValueChange={setSelectedRole}>
+                      <SelectTrigger className="w-48">
+                        <SelectValue placeholder="Select a role" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">No role</SelectItem>
+                        {ROLE_OPTIONS.map((role) => (
+                          <SelectItem key={role} value={role}>
+                            {role}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="flex justify-end gap-2">
-                    <Button onClick={updateMenuPermissions} disabled={isUpdating}>
-                      {isUpdating ? 'Updating...' : 'Update Permissions'}
+                    <Button onClick={updateUserRole} disabled={isUpdating}>
+                      {isUpdating ? 'Updating...' : 'Update Role'}
                     </Button>
                   </div>
                 </div>
@@ -182,18 +210,6 @@ export function UserCard({ user, onUpdate }: UserCardProps) {
             </Drawer>
           </div>
         </div>
-        {user.menuPermissions.length > 0 && (
-          <div className="mt-4">
-            <p className="text-sm text-gray-600 mb-2">Current Permissions:</p>
-            <div className="flex flex-wrap gap-1">
-              {user.menuPermissions.map((permission) => (
-                <Badge key={permission} variant="outline" className="text-xs">
-                  {permission}
-                </Badge>
-              ))}
-            </div>
-          </div>
-        )}
       </CardContent>
     </Card>
   );

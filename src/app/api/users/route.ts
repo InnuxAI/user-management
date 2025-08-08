@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session?.user || (session.user as any).role !== 'admin') {
+    if (!session?.user || (session.user as any).type !== 'Admin') {
       return NextResponse.json(
         { message: 'Unauthorized' }, 
         { status: 401 }
@@ -33,20 +33,21 @@ export async function PATCH(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session?.user || (session.user as any).role !== 'admin') {
+    if (!session?.user || (session.user as any).type !== 'Admin') {
       return NextResponse.json(
         { message: 'Unauthorized' }, 
         { status: 401 }
       );
     }
 
-    const { userId, status, menuPermissions } = await request.json();
+    const { userId, status, role, type } = await request.json();
 
     await connectDB();
     
     const updateData: any = {};
     if (status) updateData.status = status;
-    if (menuPermissions !== undefined) updateData.menuPermissions = menuPermissions;
+    if (role !== undefined) updateData.role = role;
+    if (type) updateData.type = type;
 
     const user = await User.findByIdAndUpdate(
       userId, 

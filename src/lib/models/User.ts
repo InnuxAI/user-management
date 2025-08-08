@@ -5,12 +5,17 @@ const UserSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   avatar: { type: String, required: false },
-  role: { 
+  type: { 
     type: String, 
-    enum: ['admin', 'marketing', 'finance', 'sales'], 
+    enum: ['Admin', 'User'], 
+    default: 'User',
     required: true 
   },
-  menuPermissions: { type: [String], default: [] },
+  role: { 
+    type: String, 
+    enum: ['super', 'Finance', 'HR', 'Sales'], 
+    required: false
+  },
   status: { 
     type: String, 
     enum: ['pending', 'accepted', 'rejected'], 

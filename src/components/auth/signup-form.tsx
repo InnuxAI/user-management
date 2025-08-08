@@ -4,11 +4,10 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface SignupFormProps {
-  onSubmit: (data: { email: string; password: string; role: string }) => void;
+  onSubmit: (data: { email: string; password: string }) => void;
   isLoading?: boolean;
 }
 
@@ -16,8 +15,7 @@ export function SignupForm({ onSubmit, isLoading }: SignupFormProps) {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    confirmPassword: '',
-    role: ''
+    confirmPassword: ''
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -28,8 +26,7 @@ export function SignupForm({ onSubmit, isLoading }: SignupFormProps) {
     }
     onSubmit({
       email: formData.email,
-      password: formData.password,
-      role: formData.role
+      password: formData.password
     });
   };
 
@@ -52,20 +49,6 @@ export function SignupForm({ onSubmit, isLoading }: SignupFormProps) {
               onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
               required
             />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="role">Role</Label>
-            <Select value={formData.role} onValueChange={(value) => setFormData(prev => ({ ...prev, role: value }))}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a role" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="admin">Admin</SelectItem>
-                <SelectItem value="marketing">Marketing</SelectItem>
-                <SelectItem value="finance">Finance</SelectItem>
-                <SelectItem value="sales">Sales</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
