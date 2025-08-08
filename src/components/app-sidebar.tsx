@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useSession } from 'next-auth/react'
 import {
   IconCamera,
   IconChartBar,
@@ -17,6 +18,11 @@ import {
   IconSearch,
   IconSettings,
   IconUsers,
+  IconCurrencyDollar,
+  IconBriefcase,
+  IconUsersGroup,
+  IconBrandYandex,
+  IconMessage
 } from "@tabler/icons-react"
 
 import { NavDocuments } from "@/components/nav-documents"
@@ -33,97 +39,53 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 
+const baseNavMain = [
+  {
+    title: "Dashboard",
+    url: "/dashboard",
+    icon: IconDashboard,
+  },
+]
+
+const roleBasedNavItems = {
+  HR: {
+    title: "HR Management",
+    url: "/hr",
+    icon: IconUsersGroup,
+  },
+  Finance: {
+    title: "Finance",
+    url: "/finance", 
+    icon: IconCurrencyDollar,
+  },
+  Sales: {
+    title: "Sales",
+    url: "/sales",
+    icon: IconBriefcase,
+  },
+}
+
 const data = {
-  navMain: [
-    {
-      title: "Dashboard",
-      url: "#",
-      icon: IconDashboard,
-    },
-    {
-      title: "Lifecycle",
-      url: "#",
-      icon: IconListDetails,
-    },
-    {
-      title: "Analytics",
-      url: "#",
-      icon: IconChartBar,
-    },
-    {
-      title: "Projects",
-      url: "#",
-      icon: IconFolder,
-    },
-    {
-      title: "Team",
-      url: "#",
-      icon: IconUsers,
-    },
-  ],
-  navClouds: [
-    {
-      title: "Capture",
-      icon: IconCamera,
-      isActive: true,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Proposal",
-      icon: IconFileDescription,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Prompts",
-      icon: IconFileAi,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-  ],
   navSecondary: [
     {
-      title: "Settings",
-      url: "#",
-      icon: IconSettings,
-    },
-    {
-      title: "Get Help",
-      url: "#",
-      icon: IconHelp,
+      title: "Chat",
+      url: "/chat",
+      icon: IconMessage,
     },
     {
       title: "Search",
-      url: "#",
+      url: "/search",
       icon: IconSearch,
+    },
+    {
+      title: "RFQ",
+      url: "/rfq",
+      icon: IconBrandYandex,
+    },
+    {
+      title: "Settings",
+      url: "/profile",
+      icon: IconSettings,
     },
   ],
   documents: [
@@ -154,11 +116,52 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
 }
 
 export function AppSidebar({ user, ...props }: AppSidebarProps) {
+  const { data: session } = useSession()
+  const [currentUser, setCurrentUser] = React.useState<any>(null)
+
+  // Fetch current user data to get role information
+  React.useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const response = await fetch("/api/users/me")
+        if (response.ok) {
+          const data = await response.json()
+          setCurrentUser(data.user)
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error)
+      }
+    }
+
+    if (session) {
+      fetchCurrentUser()
+    }
+  }, [session])
+
   const defaultUser = {
     name: user?.name || "User",
     email: user?.email || "user@example.com",
     avatar: user?.avatar,
   };
+
+  // Build navigation items based on user role
+  const navMain = React.useMemo(() => {
+    const items = [...baseNavMain]
+    
+    // Admin should see all pages
+    if (currentUser?.type === 'Admin') {
+      items.push(
+        roleBasedNavItems.HR,
+        roleBasedNavItems.Finance,
+        roleBasedNavItems.Sales
+      )
+    } else if (currentUser?.role && roleBasedNavItems[currentUser.role as keyof typeof roleBasedNavItems]) {
+      // Regular users see only their role-specific page
+      items.push(roleBasedNavItems[currentUser.role as keyof typeof roleBasedNavItems])
+    }
+    
+    return items
+  }, [currentUser?.role, currentUser?.type])
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>
@@ -170,7 +173,7 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
               <a href="/">
-                <IconInnerShadowTop className="!size-5" />
+                <img src="https://www.innuxai.com/innuxlogo.svg" alt="Innux AI" className="h-5 w-5" />
                 <span className="text-base font-semibold">Innux AI</span>
               </a>
             </SidebarMenuButton>
@@ -178,7 +181,7 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={navMain} />
         <NavDocuments items={data.documents} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
