@@ -19,7 +19,7 @@ export function SiteHeader() {
           orientation="vertical"
           className="mx-2 data-[orientation=vertical]:h-4"
         />
-        <h1 className="text-base font-medium">User Management System</h1>
+        <h1 className="text-base font-medium">Innux Dashboard</h1>
         <div className="ml-auto flex items-center gap-2">
           {(session?.user as any)?.type === 'Admin' && (
             <Button variant="ghost" asChild size="sm">

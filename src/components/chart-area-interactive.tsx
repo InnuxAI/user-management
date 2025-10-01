@@ -30,112 +30,112 @@ import {
   ToggleGroupItem,
 } from "@/components/ui/toggle-group"
 
-export const description = "An interactive area chart"
+export const description = "RFP Response Value Trend Analysis"
 
 const chartData = [
-  { date: "2024-04-01", desktop: 222, mobile: 150 },
-  { date: "2024-04-02", desktop: 97, mobile: 180 },
-  { date: "2024-04-03", desktop: 167, mobile: 120 },
-  { date: "2024-04-04", desktop: 242, mobile: 260 },
-  { date: "2024-04-05", desktop: 373, mobile: 290 },
-  { date: "2024-04-06", desktop: 301, mobile: 340 },
-  { date: "2024-04-07", desktop: 245, mobile: 180 },
-  { date: "2024-04-08", desktop: 409, mobile: 320 },
-  { date: "2024-04-09", desktop: 59, mobile: 110 },
-  { date: "2024-04-10", desktop: 261, mobile: 190 },
-  { date: "2024-04-11", desktop: 327, mobile: 350 },
-  { date: "2024-04-12", desktop: 292, mobile: 210 },
-  { date: "2024-04-13", desktop: 342, mobile: 380 },
-  { date: "2024-04-14", desktop: 137, mobile: 220 },
-  { date: "2024-04-15", desktop: 120, mobile: 170 },
-  { date: "2024-04-16", desktop: 138, mobile: 190 },
-  { date: "2024-04-17", desktop: 446, mobile: 360 },
-  { date: "2024-04-18", desktop: 364, mobile: 410 },
-  { date: "2024-04-19", desktop: 243, mobile: 180 },
-  { date: "2024-04-20", desktop: 89, mobile: 150 },
-  { date: "2024-04-21", desktop: 137, mobile: 200 },
-  { date: "2024-04-22", desktop: 224, mobile: 170 },
-  { date: "2024-04-23", desktop: 138, mobile: 230 },
-  { date: "2024-04-24", desktop: 387, mobile: 290 },
-  { date: "2024-04-25", desktop: 215, mobile: 250 },
-  { date: "2024-04-26", desktop: 75, mobile: 130 },
-  { date: "2024-04-27", desktop: 383, mobile: 420 },
-  { date: "2024-04-28", desktop: 122, mobile: 180 },
-  { date: "2024-04-29", desktop: 315, mobile: 240 },
-  { date: "2024-04-30", desktop: 454, mobile: 380 },
-  { date: "2024-05-01", desktop: 165, mobile: 220 },
-  { date: "2024-05-02", desktop: 293, mobile: 310 },
-  { date: "2024-05-03", desktop: 247, mobile: 190 },
-  { date: "2024-05-04", desktop: 385, mobile: 420 },
-  { date: "2024-05-05", desktop: 481, mobile: 390 },
-  { date: "2024-05-06", desktop: 498, mobile: 520 },
-  { date: "2024-05-07", desktop: 388, mobile: 300 },
-  { date: "2024-05-08", desktop: 149, mobile: 210 },
-  { date: "2024-05-09", desktop: 227, mobile: 180 },
-  { date: "2024-05-10", desktop: 293, mobile: 330 },
-  { date: "2024-05-11", desktop: 335, mobile: 270 },
-  { date: "2024-05-12", desktop: 197, mobile: 240 },
-  { date: "2024-05-13", desktop: 197, mobile: 160 },
-  { date: "2024-05-14", desktop: 448, mobile: 490 },
-  { date: "2024-05-15", desktop: 473, mobile: 380 },
-  { date: "2024-05-16", desktop: 338, mobile: 400 },
-  { date: "2024-05-17", desktop: 499, mobile: 420 },
-  { date: "2024-05-18", desktop: 315, mobile: 350 },
-  { date: "2024-05-19", desktop: 235, mobile: 180 },
-  { date: "2024-05-20", desktop: 177, mobile: 230 },
-  { date: "2024-05-21", desktop: 82, mobile: 140 },
-  { date: "2024-05-22", desktop: 81, mobile: 120 },
-  { date: "2024-05-23", desktop: 252, mobile: 290 },
-  { date: "2024-05-24", desktop: 294, mobile: 220 },
-  { date: "2024-05-25", desktop: 201, mobile: 250 },
-  { date: "2024-05-26", desktop: 213, mobile: 170 },
-  { date: "2024-05-27", desktop: 420, mobile: 460 },
-  { date: "2024-05-28", desktop: 233, mobile: 190 },
-  { date: "2024-05-29", desktop: 78, mobile: 130 },
-  { date: "2024-05-30", desktop: 340, mobile: 280 },
-  { date: "2024-05-31", desktop: 178, mobile: 230 },
-  { date: "2024-06-01", desktop: 178, mobile: 200 },
-  { date: "2024-06-02", desktop: 470, mobile: 410 },
-  { date: "2024-06-03", desktop: 103, mobile: 160 },
-  { date: "2024-06-04", desktop: 439, mobile: 380 },
-  { date: "2024-06-05", desktop: 88, mobile: 140 },
-  { date: "2024-06-06", desktop: 294, mobile: 250 },
-  { date: "2024-06-07", desktop: 323, mobile: 370 },
-  { date: "2024-06-08", desktop: 385, mobile: 320 },
-  { date: "2024-06-09", desktop: 438, mobile: 480 },
-  { date: "2024-06-10", desktop: 155, mobile: 200 },
-  { date: "2024-06-11", desktop: 92, mobile: 150 },
-  { date: "2024-06-12", desktop: 492, mobile: 420 },
-  { date: "2024-06-13", desktop: 81, mobile: 130 },
-  { date: "2024-06-14", desktop: 426, mobile: 380 },
-  { date: "2024-06-15", desktop: 307, mobile: 350 },
-  { date: "2024-06-16", desktop: 371, mobile: 310 },
-  { date: "2024-06-17", desktop: 475, mobile: 520 },
-  { date: "2024-06-18", desktop: 107, mobile: 170 },
-  { date: "2024-06-19", desktop: 341, mobile: 290 },
-  { date: "2024-06-20", desktop: 408, mobile: 450 },
-  { date: "2024-06-21", desktop: 169, mobile: 210 },
-  { date: "2024-06-22", desktop: 317, mobile: 270 },
-  { date: "2024-06-23", desktop: 480, mobile: 530 },
-  { date: "2024-06-24", desktop: 132, mobile: 180 },
-  { date: "2024-06-25", desktop: 141, mobile: 190 },
-  { date: "2024-06-26", desktop: 434, mobile: 380 },
-  { date: "2024-06-27", desktop: 448, mobile: 490 },
-  { date: "2024-06-28", desktop: 149, mobile: 200 },
-  { date: "2024-06-29", desktop: 103, mobile: 160 },
-  { date: "2024-06-30", desktop: 446, mobile: 400 },
+  { date: "2024-04-01", responseValue: 85000, submissions: 45000 },
+  { date: "2024-04-02", responseValue: 92000, submissions: 52000 },
+  { date: "2024-04-03", responseValue: 78000, submissions: 41000 },
+  { date: "2024-04-04", responseValue: 105000, submissions: 63000 },
+  { date: "2024-04-05", responseValue: 118000, submissions: 72000 },
+  { date: "2024-04-06", responseValue: 95000, submissions: 58000 },
+  { date: "2024-04-07", responseValue: 88000, submissions: 49000 },
+  { date: "2024-04-08", responseValue: 132000, submissions: 78000 },
+  { date: "2024-04-09", responseValue: 67000, submissions: 38000 },
+  { date: "2024-04-10", responseValue: 98000, submissions: 55000 },
+  { date: "2024-04-11", responseValue: 115000, submissions: 68000 },
+  { date: "2024-04-12", responseValue: 89000, submissions: 52000 },
+  { date: "2024-04-13", responseValue: 125000, submissions: 74000 },
+  { date: "2024-04-14", responseValue: 78000, submissions: 43000 },
+  { date: "2024-04-15", responseValue: 85000, submissions: 48000 },
+  { date: "2024-04-16", responseValue: 92000, submissions: 54000 },
+  { date: "2024-04-17", responseValue: 145000, submissions: 85000 },
+  { date: "2024-04-18", responseValue: 138000, submissions: 82000 },
+  { date: "2024-04-19", responseValue: 96000, submissions: 56000 },
+  { date: "2024-04-20", responseValue: 72000, submissions: 41000 },
+  { date: "2024-04-21", responseValue: 88000, submissions: 49000 },
+  { date: "2024-04-22", responseValue: 102000, submissions: 61000 },
+  { date: "2024-04-23", responseValue: 95000, submissions: 55000 },
+  { date: "2024-04-24", responseValue: 128000, submissions: 76000 },
+  { date: "2024-04-25", responseValue: 112000, submissions: 65000 },
+  { date: "2024-04-26", responseValue: 68000, submissions: 39000 },
+  { date: "2024-04-27", responseValue: 142000, submissions: 84000 },
+  { date: "2024-04-28", responseValue: 89000, submissions: 51000 },
+  { date: "2024-04-29", responseValue: 118000, submissions: 69000 },
+  { date: "2024-04-30", responseValue: 155000, submissions: 92000 },
+  { date: "2024-05-01", responseValue: 98000, submissions: 57000 },
+  { date: "2024-05-02", responseValue: 125000, submissions: 73000 },
+  { date: "2024-05-03", responseValue: 108000, submissions: 63000 },
+  { date: "2024-05-04", responseValue: 162000, submissions: 95000 },
+  { date: "2024-05-05", responseValue: 178000, submissions: 105000 },
+  { date: "2024-05-06", responseValue: 185000, submissions: 110000 },
+  { date: "2024-05-07", responseValue: 148000, submissions: 87000 },
+  { date: "2024-05-08", responseValue: 92000, submissions: 54000 },
+  { date: "2024-05-09", responseValue: 105000, submissions: 62000 },
+  { date: "2024-05-10", responseValue: 132000, submissions: 78000 },
+  { date: "2024-05-11", responseValue: 128000, submissions: 75000 },
+  { date: "2024-05-12", responseValue: 115000, submissions: 68000 },
+  { date: "2024-05-13", responseValue: 98000, submissions: 58000 },
+  { date: "2024-05-14", responseValue: 168000, submissions: 99000 },
+  { date: "2024-05-15", responseValue: 172000, submissions: 102000 },
+  { date: "2024-05-16", responseValue: 145000, submissions: 85000 },
+  { date: "2024-05-17", responseValue: 185000, submissions: 109000 },
+  { date: "2024-05-18", responseValue: 138000, submissions: 81000 },
+  { date: "2024-05-19", responseValue: 108000, submissions: 63000 },
+  { date: "2024-05-20", responseValue: 95000, submissions: 56000 },
+  { date: "2024-05-21", responseValue: 72000, submissions: 42000 },
+  { date: "2024-05-22", responseValue: 68000, submissions: 40000 },
+  { date: "2024-05-23", responseValue: 122000, submissions: 72000 },
+  { date: "2024-05-24", responseValue: 135000, submissions: 79000 },
+  { date: "2024-05-25", responseValue: 118000, submissions: 69000 },
+  { date: "2024-05-26", responseValue: 102000, submissions: 60000 },
+  { date: "2024-05-27", responseValue: 175000, submissions: 103000 },
+  { date: "2024-05-28", responseValue: 125000, submissions: 73000 },
+  { date: "2024-05-29", responseValue: 78000, submissions: 46000 },
+  { date: "2024-05-30", responseValue: 148000, submissions: 87000 },
+  { date: "2024-05-31", responseValue: 112000, submissions: 66000 },
+  { date: "2024-06-01", responseValue: 105000, submissions: 62000 },
+  { date: "2024-06-02", responseValue: 182000, submissions: 107000 },
+  { date: "2024-06-03", responseValue: 85000, submissions: 50000 },
+  { date: "2024-06-04", responseValue: 168000, submissions: 99000 },
+  { date: "2024-06-05", responseValue: 78000, submissions: 46000 },
+  { date: "2024-06-06", responseValue: 135000, submissions: 79000 },
+  { date: "2024-06-07", responseValue: 152000, submissions: 89000 },
+  { date: "2024-06-08", responseValue: 158000, submissions: 93000 },
+  { date: "2024-06-09", responseValue: 178000, submissions: 105000 },
+  { date: "2024-06-10", responseValue: 98000, submissions: 58000 },
+  { date: "2024-06-11", responseValue: 82000, submissions: 48000 },
+  { date: "2024-06-12", responseValue: 195000, submissions: 115000 },
+  { date: "2024-06-13", responseValue: 75000, submissions: 44000 },
+  { date: "2024-06-14", responseValue: 172000, submissions: 101000 },
+  { date: "2024-06-15", responseValue: 148000, submissions: 87000 },
+  { date: "2024-06-16", responseValue: 162000, submissions: 95000 },
+  { date: "2024-06-17", responseValue: 205000, submissions: 121000 },
+  { date: "2024-06-18", responseValue: 92000, submissions: 54000 },
+  { date: "2024-06-19", responseValue: 145000, submissions: 85000 },
+  { date: "2024-06-20", responseValue: 175000, submissions: 103000 },
+  { date: "2024-06-21", responseValue: 108000, submissions: 63000 },
+  { date: "2024-06-22", responseValue: 138000, submissions: 81000 },
+  { date: "2024-06-23", responseValue: 218000, submissions: 128000 },
+  { date: "2024-06-24", responseValue: 95000, submissions: 56000 },
+  { date: "2024-06-25", responseValue: 102000, submissions: 60000 },
+  { date: "2024-06-26", responseValue: 185000, submissions: 109000 },
+  { date: "2024-06-27", responseValue: 198000, submissions: 117000 },
+  { date: "2024-06-28", responseValue: 112000, submissions: 66000 },
+  { date: "2024-06-29", responseValue: 88000, submissions: 52000 },
+  { date: "2024-06-30", responseValue: 192000, submissions: 113000 },
 ]
 
 const chartConfig = {
-  visitors: {
-    label: "Visitors",
+  rfpData: {
+    label: "RFP Data",
   },
-  desktop: {
-    label: "Desktop",
+  responseValue: {
+    label: "Response Value",
     color: "var(--primary)",
   },
-  mobile: {
-    label: "Mobile",
+  submissions: {
+    label: "Submissions",
     color: "var(--primary)",
   },
 } satisfies ChartConfig
@@ -167,12 +167,12 @@ export function ChartAreaInteractive() {
   return (
     <Card className="@container/card">
       <CardHeader>
-        <CardTitle>Total Visitors</CardTitle>
+        <CardTitle>RFP Response Value Trend</CardTitle>
         <CardDescription>
           <span className="hidden @[540px]/card:block">
-            Total for the last 3 months
+            Analysis of RFP response values over time to track trends
           </span>
-          <span className="@[540px]/card:hidden">Last 3 months</span>
+          <span className="@[540px]/card:hidden">RFP value trends</span>
         </CardDescription>
         <CardAction>
           <ToggleGroup
@@ -215,27 +215,27 @@ export function ChartAreaInteractive() {
         >
           <AreaChart data={filteredData}>
             <defs>
-              <linearGradient id="fillDesktop" x1="0" y1="0" x2="0" y2="1">
+              <linearGradient id="fillResponseValue" x1="0" y1="0" x2="0" y2="1">
                 <stop
                   offset="5%"
-                  stopColor="var(--color-desktop)"
+                  stopColor="var(--color-responseValue)"
                   stopOpacity={1.0}
                 />
                 <stop
                   offset="95%"
-                  stopColor="var(--color-desktop)"
+                  stopColor="var(--color-responseValue)"
                   stopOpacity={0.1}
                 />
               </linearGradient>
-              <linearGradient id="fillMobile" x1="0" y1="0" x2="0" y2="1">
+              <linearGradient id="fillSubmissions" x1="0" y1="0" x2="0" y2="1">
                 <stop
                   offset="5%"
-                  stopColor="var(--color-mobile)"
+                  stopColor="var(--color-submissions)"
                   stopOpacity={0.8}
                 />
                 <stop
                   offset="95%"
-                  stopColor="var(--color-mobile)"
+                  stopColor="var(--color-submissions)"
                   stopOpacity={0.1}
                 />
               </linearGradient>
@@ -270,17 +270,17 @@ export function ChartAreaInteractive() {
               }
             />
             <Area
-              dataKey="mobile"
+              dataKey="submissions"
               type="natural"
-              fill="url(#fillMobile)"
-              stroke="var(--color-mobile)"
+              fill="url(#fillSubmissions)"
+              stroke="var(--color-submissions)"
               stackId="a"
             />
             <Area
-              dataKey="desktop"
+              dataKey="responseValue"
               type="natural"
-              fill="url(#fillDesktop)"
-              stroke="var(--color-desktop)"
+              fill="url(#fillResponseValue)"
+              stroke="var(--color-responseValue)"
               stackId="a"
             />
           </AreaChart>

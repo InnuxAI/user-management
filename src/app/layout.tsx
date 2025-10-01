@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "User Management System",
-  description: "A comprehensive user management dashboard",
+  title: "Innux Dashboard",
+  description: "A comprehensive dashboard for Innux",
 };
 
 export default function RootLayout({

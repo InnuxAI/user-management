@@ -5,7 +5,7 @@ import User from '@/lib/models/User';
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password } = await request.json();
+    const { email, password, adminCreated } = await request.json();
     
     if (!email || !password) {
       return NextResponse.json(
@@ -34,14 +34,17 @@ export async function POST(request: NextRequest) {
       password: hashedPassword, 
       type: isFirstUser ? 'Admin' : 'User',
       role: isFirstUser ? 'super' : undefined,
-      status: isFirstUser ? 'accepted' : 'pending'
+      status: (isFirstUser || adminCreated) ? 'accepted' : 'pending'
     });
     await user.save();
 
     return NextResponse.json(
       { 
-        message: isFirstUser ? 'Admin account created successfully' : 'User created successfully. Please wait for admin approval.',
-        isFirstUser 
+        message: isFirstUser ? 'Admin account created successfully' : 
+                adminCreated ? 'User account created successfully by admin' :
+                'User created successfully. Please wait for admin approval.',
+        isFirstUser,
+        userId: user._id
       }, 
       { status: 201 }
     );

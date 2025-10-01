@@ -64,7 +64,7 @@ const searchResults = {
     {
       id: 1,
       name: "Dr. Sarah Johnson",
-      email: "sarah.johnson@vetamed.com",
+      email: "sarah.johnson@innux.com",
       department: "Procurement",
       role: "Department Head",
       lastActive: "2024-02-08",
@@ -73,7 +73,7 @@ const searchResults = {
     {
       id: 2,
       name: "Michael Chen",
-      email: "michael.chen@vetamed.com",
+      email: "michael.chen@innux.com",
       department: "Safety",
       role: "Safety Officer",
       lastActive: "2024-02-07",
@@ -82,7 +82,7 @@ const searchResults = {
     {
       id: 3,
       name: "Emily Rodriguez",
-      email: "emily.rodriguez@vetamed.com",
+      email: "emily.rodriguez@innux.com",
       department: "Quality Assurance",
       role: "QA Manager",
       lastActive: "2024-02-06",

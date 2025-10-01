@@ -38,11 +38,17 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <LoginForm onSubmit={handleLogin} isLoading={isLoading} />
-        <div className="text-center">
+        <div className="text-center space-y-2">
           <p className="text-sm text-muted-foreground">
             Don't have an account?{' '}
             <Link href="/auth/signup" className="font-medium text-primary hover:text-primary/80">
               Sign up
+            </Link>
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Want secure signup?{' '}
+            <Link href="/auth/signup-otp" className="font-medium text-primary hover:text-primary/80">
+              OTP Verification
             </Link>
           </p>
         </div>

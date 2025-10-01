@@ -4,7 +4,13 @@ import { useSession } from 'next-auth/react';
 import { redirect } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { UserDataTable } from '@/components/admin/user-data-table';
+import { AddUserModal } from '@/components/admin/add-user-modal';
+import { DeleteUserModal } from '@/components/admin/delete-user-modal';
+import { SendEmailModal } from '@/components/admin/send-email-modal';
+import { Button } from '@/components/ui/button';
+import { UserPlus, ArrowLeft, Users } from 'lucide-react';
 import { toast } from 'sonner';
+import Link from 'next/link';
 
 interface User {
   _id: string;
@@ -19,6 +25,10 @@ export default function AdminPage() {
   const { data: session, status } = useSession();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -50,6 +60,16 @@ export default function AdminPage() {
     }
   };
 
+  const handleDeleteUser = (user: User) => {
+    setSelectedUser(user);
+    setShowDeleteModal(true);
+  };
+
+  const handleSendEmail = (user: User) => {
+    setSelectedUser(user);
+    setShowEmailModal(true);
+  };
+
   const handleUpdateUser = async (userId: string, updates: { status?: string; role?: string; type?: string }) => {
     try {
       const response = await fetch('/api/users', {
@@ -79,17 +99,33 @@ export default function AdminPage() {
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">User Management</h1>
-        <p className="text-gray-600">Manage user registrations and permissions</p>
-        
-        {/* Debug info */}
-        <div className="mt-4 p-4 rounded text-sm">
-          <p><strong>Session:</strong> {session?.user?.email} ({(session?.user as any)?.type})</p>
-          <p><strong>Users Found:</strong> {users.length}</p>
+        <div className="flex justify-between items-start">
+          <div>
+            <div className="flex items-center gap-4 mb-2">
+              <Link href="/dashboard">
+                <Button variant="outline" size="sm" className="flex items-center gap-2">
+                  <ArrowLeft className="h-4 w-4" />
+                  Back to Dashboard
+                </Button>
+              </Link>
+            </div>
+            <div className="flex items-center gap-3">
+              <Users className="h-8 w-8 text-primary" />
+              <div>
+                <h1 className="text-3xl font-bold">User Management</h1>
+                <p className="text-gray-600">Manage user registrations and permissions</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <UserDataTable data={users} onUpdateUser={handleUpdateUser} />
+      <UserDataTable 
+        data={users} 
+        onUpdateUser={handleUpdateUser}
+        onDeleteUser={handleDeleteUser}
+        onSendEmail={handleSendEmail}
+      />
 
       {users.length === 0 && !loading && (
         <div className="text-center py-8">
@@ -102,6 +138,26 @@ export default function AdminPage() {
           </button>
         </div>
       )}
+
+      {/* Modals */}
+      <AddUserModal
+        open={showAddModal}
+        onOpenChange={setShowAddModal}
+        onUserAdded={fetchUsers}
+      />
+
+      <DeleteUserModal
+        open={showDeleteModal}
+        onOpenChange={setShowDeleteModal}
+        user={selectedUser}
+        onUserDeleted={fetchUsers}
+      />
+
+      <SendEmailModal
+        open={showEmailModal}
+        onOpenChange={setShowEmailModal}
+        user={selectedUser}
+      />
     </div>
   );
 }

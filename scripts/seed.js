@@ -37,7 +37,7 @@ const User = mongoose.models.User || mongoose.model('User', UserSchema);
 const testUsers = [
   {
     name: 'HR Manager',
-    email: 'hr@vetamed.com',
+    email: 'hr@innux.com',
     password: 'password123',
     type: 'User',
     role: 'HR',
@@ -45,7 +45,7 @@ const testUsers = [
   },
   {
     name: 'Finance Director',
-    email: 'finance@vetamed.com', 
+    email: 'finance@innux.com', 
     password: 'password123',
     type: 'User',
     role: 'Finance',
@@ -53,7 +53,7 @@ const testUsers = [
   },
   {
     name: 'Sales Manager',
-    email: 'sales@vetamed.com',
+    email: 'sales@innux.com',
     password: 'password123',
     type: 'User',
     role: 'Sales',
@@ -61,7 +61,7 @@ const testUsers = [
   },
   {
     name: 'Super Admin',
-    email: 'admin@vetamed.com',
+    email: 'admin@innux.com',
     password: 'password123',
     type: 'Admin',
     role: 'super',
@@ -72,7 +72,7 @@ const testUsers = [
 async function seedUsers() {
   try {
     // Connect to MongoDB (adjust the connection string as needed)
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/vetamed');
+    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/innux');
     console.log('Connected to MongoDB');
 
     // Check if users already exist

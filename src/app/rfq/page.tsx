@@ -30,6 +30,7 @@ import {
   AlertCircle,
   XCircle
 } from "lucide-react";
+import { RFQCreationModal } from "@/components/rfq-creation-modal";
 
 // Dummy RFQ data
 const rfqData = [
@@ -142,6 +143,7 @@ export default function RFQPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredData, setFilteredData] = useState(rfqData);
   const [selectedStatus, setSelectedStatus] = useState("all");
+  const [isRFQModalOpen, setIsRFQModalOpen] = useState(false);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -200,9 +202,9 @@ export default function RFQPage() {
               <Download className="mr-2 h-4 w-4" />
               Export
             </Button>
-            <Button>
+            <Button onClick={() => setIsRFQModalOpen(true)}>
               <Plus className="mr-2 h-4 w-4" />
-              New RFQ
+              Add RFQ
             </Button>
           </div>
         </div>
@@ -403,6 +405,18 @@ export default function RFQPage() {
             )}
           </CardContent>
         </Card>
+        
+        {/* RFQ Creation Modal */}
+        <RFQCreationModal
+          isOpen={isRFQModalOpen}
+          onClose={() => setIsRFQModalOpen(false)}
+          onSubmit={(data) => {
+            console.log('RFQ Created:', data);
+            // Here you would normally send the data to your API
+            // For now, we'll just close the modal
+            setIsRFQModalOpen(false);
+          }}
+        />
       </div>
     </DashboardLayout>
   );

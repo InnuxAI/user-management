@@ -3,10 +3,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { SignupForm } from '@/components/auth/signup-form';
+import { OTPSignupForm } from '@/components/auth/otp-signup-form';
 import { toast } from 'sonner';
 
-export default function SignupPage() {
+export default function OTPSignupPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -40,7 +40,17 @@ export default function SignupPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
-        <SignupForm onSubmit={handleSignup} isLoading={isLoading} />
+        <div className="text-center">
+          <h2 className="text-3xl font-bold tracking-tight">
+            Join Innux AI
+          </h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Create your account with email verification
+          </p>
+        </div>
+        
+        <OTPSignupForm onSubmit={handleSignup} isLoading={isLoading} />
+        
         <div className="text-center space-y-2">
           <p className="text-sm text-muted-foreground">
             Already have an account?{' '}
@@ -49,9 +59,9 @@ export default function SignupPage() {
             </Link>
           </p>
           <p className="text-sm text-muted-foreground">
-            Want email verification?{' '}
-            <Link href="/auth/signup-otp" className="font-medium text-primary hover:text-primary/80">
-              Secure Signup with OTP
+            Want to use the simple signup?{' '}
+            <Link href="/auth/signup" className="font-medium text-primary hover:text-primary/80">
+              Basic Signup
             </Link>
           </p>
         </div>

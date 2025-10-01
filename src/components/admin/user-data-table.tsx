@@ -70,10 +70,14 @@ interface User {
 interface UserDataTableProps {
   data: User[];
   onUpdateUser: (userId: string, updates: { status?: string; role?: string; type?: string }) => Promise<void>;
+  onDeleteUser: (user: User) => void;
+  onSendEmail: (user: User) => void;
 }
 
 const columns = (
-  onUpdateUser: (userId: string, updates: { status?: string; role?: string; type?: string }) => Promise<void>
+  onUpdateUser: (userId: string, updates: { status?: string; role?: string; type?: string }) => Promise<void>,
+  onDeleteUser: (user: User) => void,
+  onSendEmail: (user: User) => void
 ): ColumnDef<User>[] => [
   {
     id: "select",
@@ -261,17 +265,23 @@ const columns = (
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-40">
-          <DropdownMenuItem>Edit User</DropdownMenuItem>
-          <DropdownMenuItem>Send Email</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => onSendEmail(row.original)}>
+            Send Email
+          </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem variant="destructive">Delete User</DropdownMenuItem>
+          <DropdownMenuItem 
+            variant="destructive" 
+            onClick={() => onDeleteUser(row.original)}
+          >
+            Delete User
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     ),
   },
 ];
 
-export function UserDataTable({ data, onUpdateUser }: UserDataTableProps) {
+export function UserDataTable({ data, onUpdateUser, onDeleteUser, onSendEmail }: UserDataTableProps) {
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
@@ -283,7 +293,7 @@ export function UserDataTable({ data, onUpdateUser }: UserDataTableProps) {
 
   const table = useReactTable({
     data,
-    columns: columns(onUpdateUser),
+    columns: columns(onUpdateUser, onDeleteUser, onSendEmail),
     state: {
       sorting,
       columnVisibility,
@@ -393,7 +403,7 @@ export function UserDataTable({ data, onUpdateUser }: UserDataTableProps) {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={columns(onUpdateUser).length}
+                  colSpan={columns(onUpdateUser, onDeleteUser, onSendEmail).length}
                   className="h-24 text-center"
                 >
                   No users found.

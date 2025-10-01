@@ -22,7 +22,8 @@ import {
   IconBriefcase,
   IconUsersGroup,
   IconBrandYandex,
-  IconMessage
+  IconMessage,
+  IconUserCheck
 } from "@tabler/icons-react"
 
 import { NavDocuments } from "@/components/nav-documents"
@@ -81,6 +82,11 @@ const data = {
       title: "RFQ",
       url: "/rfq",
       icon: IconBrandYandex,
+    },
+    {
+      title: "Vendor Select",
+      url: "/vendor-select",
+      icon: IconUserCheck,
     },
     {
       title: "Settings",
