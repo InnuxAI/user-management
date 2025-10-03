@@ -221,6 +221,15 @@ export const api = {
       })
   },
 
+  // AI Analysis Reports
+  aiAnalysis: {
+    getReport: (rfqId: string) => 
+      apiRequest(`/rfqs/${rfqId}/ai-analysis`),
+    
+    checkAvailability: (rfqId: string) => 
+      apiRequest(`/rfqs/${rfqId}/ai-analysis/availability`)
+  },
+
   // Analytics (future endpoints)
   analytics: {
     completionRates: () => apiRequest('/analytics/completion-rates'),

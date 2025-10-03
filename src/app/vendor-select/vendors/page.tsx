@@ -70,6 +70,7 @@ export default function VendorManagementPage() {
       const response = await api.vendors.list();
       
       if (response.success) {
+        console.log('Fetched vendors:', response.data);
         setVendors(response.data || []);
       } else {
         toast.error('Failed to fetch vendors');

@@ -8,16 +8,77 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { CheckCircle, AlertTriangle, TrendingUp, Award, FileText, Database } from "lucide-react";
 
+interface AIAnalysisData {
+  rfqId: string;
+  recommendedVendor: string;
+  overallScore: number;        // 1-5 scale (frontend scale)
+  confidence: number;          // 0-100 percentage
+  analysisDate: string;        // MM/DD/YYYY format
+  
+  decisionFactors: Array<{
+    factor: string;            // e.g., "Price Competitiveness"
+    weight: number;            // percentage weight (0-100)
+    score: number;             // 1-5 scale (frontend scale)
+    reasoning: string;         // detailed explanation
+  }>;
+
+  vendorComparison: Array<{
+    vendor: string;
+    priceCompetitiveness: number;    // 1-5 scale
+    onTimeDelivery: number;          // 1-5 scale
+    defectRate: number;              // 1-5 scale
+    leadTime: number;                // 1-5 scale
+    orderAccuracy: number;           // 1-5 scale
+    customerService: number;         // 1-5 scale
+    complianceRate: number;          // 1-5 scale
+    supplierReputation: number;      // 1-5 scale
+    innovationCapability: number;    // 1-5 scale
+    riskProfile: number;             // 1-5 scale
+    totalScore: number;              // calculated average
+    status: "Recommended" | "Alternative" | "Not Recommended";
+  }>;
+
+  kpiMethodology: Array<{
+    kpi: string;               // KPI name
+    scoreScale: string;        // "1–5"
+    sampleScoring: string;     // scoring criteria description
+    dataSource: string;        // data source description
+  }>;
+
+  keyAdvantages: string[];     // Array of advantage descriptions
+
+  concerns: Array<{
+    issue: string;
+    mitigation: string;
+    severity: "Low" | "Medium" | "High";
+  }>;
+
+  recommendation: {
+    decision: "APPROVE" | "REJECT" | "REVIEW";
+    reasoning: string;
+    nextSteps: string[];
+  };
+}
+
 interface AIAnalysisSheetProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   rfqId: string;
   selectedVendor?: string;
+  analysisData?: AIAnalysisData;
+  loading?: boolean;
 }
 
-export function AIAnalysisSheet({ isOpen, onOpenChange, rfqId, selectedVendor }: AIAnalysisSheetProps) {
-  // Dummy data template for AI analysis - this format should be used for AI output
-  const analysisData = {
+export function AIAnalysisSheet({ 
+  isOpen, 
+  onOpenChange, 
+  rfqId, 
+  selectedVendor, 
+  analysisData, 
+  loading = false 
+}: AIAnalysisSheetProps) {
+  // Fallback dummy data if no real data is provided
+  const fallbackData = {
     rfqId: rfqId,
     recommendedVendor: selectedVendor || "AWS Solutions",
     overallScore: 4.2,
@@ -207,13 +268,32 @@ export function AIAnalysisSheet({ isOpen, onOpenChange, rfqId, selectedVendor }:
     }
   };
 
+  // Use real data if available, otherwise fallback to dummy data
+  const displayData = analysisData || fallbackData;
+
+  // Loading state
+  if (loading) {
+    return (
+      <Sheet open={isOpen} onOpenChange={onOpenChange}>
+        <SheetContent className="w-[60vw] max-w-[90vw] overflow-y-auto">
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+              <p className="mt-4">Generating AI Analysis...</p>
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
       <SheetContent className="w-[60vw] max-w-[90vw] overflow-y-auto">
         <SheetHeader className="space-y-4">
           <SheetTitle className="text-xl font-bold text-foreground">AI Analysis Report</SheetTitle>
           <SheetDescription className="text-base text-muted-foreground">
-            Comprehensive analysis for RFQ {rfqId} - Generated on {analysisData.analysisDate}
+            Comprehensive analysis for RFQ {rfqId} - Generated on {displayData.analysisDate}
           </SheetDescription>
         </SheetHeader>
 
@@ -229,19 +309,19 @@ export function AIAnalysisSheet({ isOpen, onOpenChange, rfqId, selectedVendor }:
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center p-4 bg-muted/50 border border-border rounded-lg">
-                  <div className="text-2xl font-bold text-primary">{analysisData.overallScore}/5</div>
+                  <div className="text-2xl font-bold text-primary">{displayData.overallScore}/5</div>
                   <div className="text-sm text-muted-foreground">Overall Score</div>
                 </div>
                 <div className="text-center p-4 bg-accent/50 border border-border rounded-lg">
-                  <div className="text-2xl font-bold text-accent-foreground">{analysisData.confidence}%</div>
+                  <div className="text-2xl font-bold text-accent-foreground">{displayData.confidence}%</div>
                   <div className="text-sm text-muted-foreground">Confidence</div>
                 </div>
               </div>
               <div className="p-4 bg-muted/30 border border-border rounded-lg">
-                <div className="font-semibold mb-2 text-foreground">Recommended Vendor: {analysisData.recommendedVendor}</div>
+                <div className="font-semibold mb-2 text-foreground">Recommended Vendor: {displayData.recommendedVendor}</div>
                 <Badge className="bg-accent text-accent-foreground">
                   <CheckCircle className="h-3 w-3 mr-1" />
-                  {analysisData.recommendation.decision}
+                  {displayData.recommendation?.decision || 'PENDING'}
                 </Badge>
               </div>
             </CardContent>
@@ -256,7 +336,7 @@ export function AIAnalysisSheet({ isOpen, onOpenChange, rfqId, selectedVendor }:
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {analysisData.decisionFactors.map((factor, index) => (
+              {displayData.decisionFactors?.map((factor: any, index: number) => (
                 <div key={index} className="border border-border rounded-lg p-4 bg-muted/30">
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-medium text-foreground">{factor.factor}</span>
@@ -268,7 +348,11 @@ export function AIAnalysisSheet({ isOpen, onOpenChange, rfqId, selectedVendor }:
                   <Progress value={factor.score * 20} className="mb-2" />
                   <p className="text-sm text-muted-foreground">{factor.reasoning}</p>
                 </div>
-              ))}
+              )) || (
+                <div className="text-center py-8 text-muted-foreground">
+                  No decision factors available
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -301,7 +385,7 @@ export function AIAnalysisSheet({ isOpen, onOpenChange, rfqId, selectedVendor }:
                     </tr>
                   </thead>
                   <tbody>
-                    {analysisData.vendorComparison.map((vendor, index) => (
+                    {displayData.vendorComparison?.map((vendor: any, index: number) => (
                       <tr key={index} className="border-b border-muted">
                         <td className="py-3 px-2 font-medium text-foreground">{vendor.vendor}</td>
                         <td className="py-3 px-2 text-center text-muted-foreground">{vendor.priceCompetitiveness}</td>
@@ -340,17 +424,21 @@ export function AIAnalysisSheet({ isOpen, onOpenChange, rfqId, selectedVendor }:
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-foreground">
                 <CheckCircle className="h-5 w-5 text-primary" />
-                Key Advantages - {analysisData.recommendedVendor}
+                Key Advantages - {displayData.recommendedVendor}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <ul className="space-y-2">
-                {analysisData.keyAdvantages.map((advantage, index) => (
+                {displayData.keyAdvantages?.length ? displayData.keyAdvantages.map((advantage: string, index: number) => (
                   <li key={index} className="flex items-start gap-2">
                     <CheckCircle className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
                     <span className="text-sm text-muted-foreground">{advantage}</span>
                   </li>
-                ))}
+                )) : (
+                  <li className="text-center py-4 text-muted-foreground">
+                    No key advantages identified
+                  </li>
+                )}
               </ul>
             </CardContent>
           </Card>
@@ -364,7 +452,7 @@ export function AIAnalysisSheet({ isOpen, onOpenChange, rfqId, selectedVendor }:
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {analysisData.concerns.map((concern, index) => (
+              {displayData.concerns?.length ? displayData.concerns.map((concern: any, index: number) => (
                 <div key={index} className="border-l-4 border-primary/50 pl-4 py-2">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="font-medium text-sm text-foreground">{concern.issue}</span>
@@ -383,7 +471,11 @@ export function AIAnalysisSheet({ isOpen, onOpenChange, rfqId, selectedVendor }:
                     <strong>Mitigation:</strong> {concern.mitigation}
                   </p>
                 </div>
-              ))}
+              )) : (
+                <div className="text-center py-4 text-muted-foreground">
+                  No concerns identified
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -418,7 +510,7 @@ export function AIAnalysisSheet({ isOpen, onOpenChange, rfqId, selectedVendor }:
                           </tr>
                         </thead>
                         <tbody>
-                          {analysisData.kpiMethodology.map((kpi, index) => (
+                          {displayData.kpiMethodology?.map((kpi: any, index: number) => (
                             <tr key={index} className="border-b border-muted last:border-b-0">
                               <td className="py-3 px-4 font-medium text-foreground">{kpi.kpi}</td>
                               <td className="py-3 px-4 text-muted-foreground">{kpi.scoreScale}</td>
@@ -455,18 +547,22 @@ export function AIAnalysisSheet({ isOpen, onOpenChange, rfqId, selectedVendor }:
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="p-4 bg-card rounded-lg border border-border">
-                <div className="font-semibold mb-2 text-foreground">Decision: {analysisData.recommendation.decision}</div>
-                <p className="text-sm text-muted-foreground mb-4">{analysisData.recommendation.reasoning}</p>
+                <div className="font-semibold mb-2 text-foreground">Decision: {displayData.recommendation?.decision || 'PENDING'}</div>
+                <p className="text-sm text-muted-foreground mb-4">{displayData.recommendation?.reasoning || 'Analysis in progress...'}</p>
                 
                 <div className="space-y-2">
                   <div className="font-medium text-sm text-foreground">Next Steps:</div>
                   <ul className="space-y-1">
-                    {analysisData.recommendation.nextSteps.map((step, index) => (
+                    {displayData.recommendation?.nextSteps?.length ? displayData.recommendation.nextSteps.map((step: string, index: number) => (
                       <li key={index} className="flex items-start gap-2 text-sm">
                         <span className="font-medium text-primary">{index + 1}.</span>
                         <span className="text-muted-foreground">{step}</span>
                       </li>
-                    ))}
+                    )) : (
+                      <li className="text-sm text-muted-foreground">
+                        No next steps available
+                      </li>
+                    )}
                   </ul>
                 </div>
               </div>

@@ -9,18 +9,21 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Progress } from "@/components/ui/progress";
 import { AIReportSheet } from "@/components/ai-report-sheet";
 import { AIAnalysisSheet } from "@/components/ai-analysis-sheet";
 import { VendorSelectSidebar } from "@/components/vendor-select-sidebar";
 import { ConnectionStatus } from "@/components/connection-status";
 import { DocumentProcessingIndicator, DocumentProcessingBadge } from "@/components/document-processing-indicator";
 import { RFQCreationModal } from "@/components/rfq-creation-modal";
+import { RFQCriteriaModal } from "@/components/rfq-criteria-modal";
 
 import { RealTimeProvider, useRealTime, useDocumentProcessing, useRFQStatus } from "@/contexts/RealTimeContext";
 import { api, apiHelpers, handleApiError } from "@/lib/api";
 import { APITest } from "@/components/api-test";
 import { toast } from "sonner";
-import { ChevronRight, ChevronDown, Search, Filter, Download, Plus, X, Brain, Wifi } from "lucide-react";
+import { ChevronRight, ChevronDown, Search, Filter, Download, Plus, X, Brain, Wifi, Settings } from "lucide-react";
 import Link from "next/link";
 
 interface VendorDetail {
@@ -96,6 +99,13 @@ function VendorSelectPageContent() {
   const [isAIReportOpen, setIsAIReportOpen] = useState(false);
   const [isAIAnalysisOpen, setIsAIAnalysisOpen] = useState(false);
   const [isRFQModalOpen, setIsRFQModalOpen] = useState(false);
+  const [isCriteriaModalOpen, setIsCriteriaModalOpen] = useState(false);
+  const [criteriaRFQId, setCriteriaRFQId] = useState<string>("");
+
+  // AI Analysis state management
+  const [aiAnalysisAvailability, setAiAnalysisAvailability] = useState<Map<string, boolean>>(new Map());
+  const [aiAnalysisData, setAiAnalysisData] = useState<any>(null);
+  const [aiAnalysisLoading, setAiAnalysisLoading] = useState(false);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [currentTime, setCurrentTime] = useState<string>("");
@@ -183,7 +193,7 @@ function VendorSelectPageContent() {
                             status: doc.status === 'processed' ? 'Received' : 
                                    doc.status === 'failed' ? 'Rejected' : 'Pending',
                             statusBadge: doc.status === 'processed' ? 'success' : 
-                                        doc.status === 'failed' ? 'danger' : 'warning',
+                                        doc.status === 'failed' ? 'danger' : 'Not Received',
                             score: doc.score || doc.ai_score || 0,
                             // Azure Blob Storage fields
                             blob_url: doc.blob_url,
@@ -249,6 +259,24 @@ function VendorSelectPageContent() {
 
     fetchData();
   }, []);
+
+  // Check AI analysis availability for all RFQs when data loads
+  useEffect(() => {
+    const checkAllRFQsAvailability = async () => {
+      if (projectsData.length > 0) {
+        const allRFQIds = projectsData.flatMap(project => 
+          project.rfqs.map(rfq => rfq.id)
+        );
+        
+        // Check availability for all RFQs in parallel
+        await Promise.all(
+          allRFQIds.map(rfqId => checkAIAnalysisAvailability(rfqId))
+        );
+      }
+    };
+
+    checkAllRFQsAvailability();
+  }, [projectsData]);
 
   // Update data when real-time updates come in
   useEffect(() => {
@@ -610,6 +638,57 @@ function VendorSelectPageContent() {
     setIsAIReportOpen(true);
   };
 
+  // AI Analysis handlers
+  const checkAIAnalysisAvailability = async (rfqId: string) => {
+    try {
+      const response = await api.aiAnalysis.checkAvailability(rfqId);
+      if (response.success) {
+        setAiAnalysisAvailability(prev => new Map(prev.set(rfqId, response.data.available)));
+        return response.data.available;
+      }
+      return false;
+    } catch (error) {
+      console.error(`Failed to check AI analysis availability for ${rfqId}:`, error);
+      setAiAnalysisAvailability(prev => new Map(prev.set(rfqId, false)));
+      return false;
+    }
+  };
+
+  const handleAIAnalysis = async (rfqId: string) => {
+    try {
+      setAiAnalysisLoading(true);
+      setSelectedRFQ(rfqId);
+      
+      const response = await api.aiAnalysis.getReport(rfqId);
+      if (response.success) {
+        setAiAnalysisData(response.data);
+        setIsAIAnalysisOpen(true);
+      } else {
+        toast.error('AI Analysis Not Available', {
+          description: 'No AI analysis report found for this RFQ. Documents may still be processing.'
+        });
+      }
+    } catch (error) {
+      console.error(`Failed to fetch AI analysis for ${rfqId}:`, error);
+      toast.error('AI Analysis Error', {
+        description: 'Failed to load AI analysis report. Please try again later.'
+      });
+    } finally {
+      setAiAnalysisLoading(false);
+    }
+  };
+
+  const handleCriteria = (rfqId: string) => {
+    setCriteriaRFQId(rfqId);
+    setIsCriteriaModalOpen(true);
+  };
+
+  const handleCriteriaSave = () => {
+    toast.success('Analysis Criteria', {
+      description: 'RFQ analysis criteria saved successfully'
+    });
+  };
+
   const handleDocumentPreview = async (document: any) => {
     try {
       const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -911,7 +990,7 @@ function VendorSelectPageContent() {
                       <TableHead className="w-64 font-semibold text-left">Project / RFQ / Vendor</TableHead>
                       <TableHead className="w-48 text-center font-semibold">Documents Summary</TableHead>
                       <TableHead className="w-40 text-center font-semibold">Status Overview</TableHead>
-                      <TableHead className="w-32 text-center font-semibold">Avg. Score</TableHead>
+                      {/* <TableHead className="w-32 text-center font-semibold">Avg. Score</TableHead> */}
                       <TableHead className="w-36 text-center font-semibold">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -961,13 +1040,39 @@ function VendorSelectPageContent() {
                             </Badge>
                           </TableCell>
                           <TableCell className="text-center">
-                            {project.rfqs.some(rfq => rfq.selectedVendorId) ? (
-                              <Badge className="bg-green-100 text-green-800">✓ Selected</Badge>
-                            ) : (
-                              <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">Pending Selection</Badge>
-                            )}
+                            {(() => {
+                              const totalRFQs = project.rfqs.length;
+                              const selectedRFQs = project.rfqs.filter(rfq => rfq.selectedVendorId).length;
+                              const reportsGenerated = project.rfqs.filter(rfq => aiAnalysisAvailability.get(rfq.id)).length;
+                              
+                              if (selectedRFQs > 0) {
+                                return <Badge className="bg-green-100 text-green-800">✓ Selected</Badge>;
+                              } else if (totalRFQs > 0) {
+                                // Always show progress bar for projects with multiple RFQs
+                                const percentage = totalRFQs > 0 ? Math.round((reportsGenerated / totalRFQs) * 100) : 0;
+                                return (
+                                  <div className="flex flex-col items-center gap-1">
+                                    <div className="w-24 flex flex-col items-center gap-1">
+                                      <Progress 
+                                        value={percentage} 
+                                        className="h-2 w-full"
+                                      />
+                                      <div className="text-xs text-muted-foreground">
+                                        {reportsGenerated}/{totalRFQs} Reports
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              } else if (reportsGenerated > 0) {
+                                // Single RFQ with report generated
+                                return <Badge className="bg-blue-100 text-blue-800">📊 Report Generated</Badge>;
+                              } else {
+                                // Single RFQ or no RFQs, no reports
+                                return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">Pending Selection</Badge>;
+                              }
+                            })()}
                           </TableCell>
-                          <TableCell className="text-center">-</TableCell>
+                          {/* <TableCell className="text-center">-</TableCell> */}
                           <TableCell className="text-center">
                             <Button variant="outline" size="sm">View Details</Button>
                           </TableCell>
@@ -1005,25 +1110,65 @@ function VendorSelectPageContent() {
                               <TableCell className="text-center">
                                 {rfq.selectedVendorId ? (
                                   <Badge className="bg-green-100 text-green-800">✓ Selected</Badge>
+                                ) : aiAnalysisAvailability.get(rfq.id) ? (
+                                  <Badge className="bg-blue-100 text-blue-800">📊 Report Generated</Badge>
                                 ) : (
                                   <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">Pending Selection</Badge>
                                 )}
                               </TableCell>
-                              <TableCell className="text-center">-</TableCell>
+                              {/* <TableCell className="text-center">-</TableCell> */}
                               <TableCell className="text-center">
                                 <div className="flex gap-2 justify-center">
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setSelectedRFQ(rfq.id);
-                                      setIsAIAnalysisOpen(true);
-                                    }}
-                                  >
-                                    <Brain className="h-4 w-4 mr-1" />
-                                    AI Analysis
-                                  </Button>
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <div>
+                                          <Button 
+                                            variant="outline" 
+                                            size="sm"
+                                            disabled={!aiAnalysisAvailability.get(rfq.id) || aiAnalysisLoading}
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              handleAIAnalysis(rfq.id);
+                                            }}
+                                            className={`${!aiAnalysisAvailability.get(rfq.id) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                          >
+                                            <Brain className="h-4 w-4 mr-1" />
+                                            {aiAnalysisLoading && selectedRFQ === rfq.id ? 'Loading...' : 'AI Analysis'}
+                                          </Button>
+                                        </div>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>
+                                          {aiAnalysisAvailability.get(rfq.id) 
+                                            ? 'View AI-powered vendor analysis and recommendations' 
+                                            : 'Documents Pending for AI Analysis'}
+                                        </p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                  
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Button 
+                                          variant="outline" 
+                                          size="sm"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleCriteria(rfq.id);
+                                          }}
+                                          className="h-8"
+                                        >
+                                          <Settings className="h-4 w-4" />
+                                        </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>Manage analysis criteria for this RFQ</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                  
                                   {rfq.selectedVendorId && (
                                     <Button 
                                       variant="default"
@@ -1075,18 +1220,24 @@ function VendorSelectPageContent() {
                                   </TableCell>
                                   <TableCell className="text-center">
                                     <div className="flex flex-col items-center gap-1">
-                                      <Badge 
+                                      {/* <Badge 
                                         variant={vendor.status === "Selected" ? "default" : "secondary"}
                                         className={vendor.status === "Selected" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}
                                       >
                                         {vendor.status}
-                                      </Badge>
-                                      <div className="text-xs text-muted-foreground">
-                                        {vendor.completionPercentage}% complete
+                                      </Badge> */}
+                                      <div className="w-20 flex flex-col items-center gap-1">
+                                        <Progress 
+                                          value={vendor.completionPercentage} 
+                                          className="h-2 w-full"
+                                        />
+                                        <div className="text-xs text-muted-foreground">
+                                          {vendor.completionPercentage.toFixed(2)}%
+                                        </div>
                                       </div>
                                     </div>
                                   </TableCell>
-                                  <TableCell className="text-center">
+                                  {/* <TableCell className="text-center">
                                     {vendor.avgScore > 0 ? (
                                       <span className={`px-2 py-1 rounded-md font-medium text-sm ${getScoreColor(vendor.avgScore * 10)}`}>
                                         {vendor.avgScore}/10
@@ -1094,7 +1245,7 @@ function VendorSelectPageContent() {
                                     ) : (
                                       <span className="text-muted-foreground">-</span>
                                     )}
-                                  </TableCell>
+                                  </TableCell> */}
                                   <TableCell className="text-center">
                                     <div className="flex gap-1 justify-center">
                                       {vendor.status === "Selected" ? (
@@ -1114,28 +1265,26 @@ function VendorSelectPageContent() {
                                   <TableRow className="bg-muted/10">
                                     <TableCell colSpan={5} className="p-0">
                                       <div className="p-4 ml-16 border-l-2 border-muted">
-                                        <div className="text-sm font-medium mb-3">Documents for {vendor.name}</div>
                                         <div className="overflow-x-auto">
-                                          <table className="w-full text-sm">
-                                            <thead>
-                                              <tr className="border-b">
-                                                <th className="text-left py-2 font-medium text-muted-foreground w-1/3">Document Name</th>
-                                                <th className="text-center py-2 font-medium text-muted-foreground w-1/6">Status</th>
-                                                <th className="text-center py-2 font-medium text-muted-foreground w-1/6">Status Badge</th>
-                                                <th className="text-center py-2 font-medium text-muted-foreground w-1/6">Score</th>
-                                                <th className="text-center py-2 font-medium text-muted-foreground w-1/6">Actions</th>
-                                              </tr>
-                                            </thead>
-                                            <tbody>
+                                          <Table>
+                                            <TableHeader>
+                                              <TableRow>
+                                                <TableHead className="text-left w-1/3">Document Name</TableHead>
+                                                <TableHead className="text-center w-1/6">Status</TableHead>
+                                                <TableHead className="text-center w-1/6">Status Badge</TableHead>
+                                                <TableHead className="text-center w-1/6">Actions</TableHead>
+                                              </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
                                               {vendor.documents.map((doc, docIdx) => (
-                                                <tr key={docIdx} className="border-b last:border-b-0">
-                                                  <td className="py-2 font-medium text-left w-1/3">{doc.name}</td>
-                                                  <td className="py-2 text-center w-1/6">
+                                                <TableRow key={docIdx}>
+                                                  <TableCell className="font-medium text-left w-1/3">{doc.name}</TableCell>
+                                                  <TableCell className="text-center w-1/6">
                                                     <span className="text-sm font-medium">
                                                       {doc.status}
                                                     </span>
-                                                  </td>
-                                                  <td className="py-2 text-center w-1/6">
+                                                  </TableCell>
+                                                  <TableCell className="text-center w-1/6">
                                                     <Badge 
                                                       variant={doc.status === "Received" ? "default" : doc.status === "Pending" ? "secondary" : "destructive"}
                                                       className={
@@ -1146,17 +1295,8 @@ function VendorSelectPageContent() {
                                                     >
                                                       {doc.statusBadge}
                                                     </Badge>
-                                                  </td>
-                                                  <td className="py-2 text-center w-1/6">
-                                                    {doc.score > 0 ? (
-                                                      <span className="font-mono text-sm bg-muted px-2 py-1 rounded">
-                                                        {doc.score}/10
-                                                      </span>
-                                                    ) : (
-                                                      <span className="text-muted-foreground">-</span>
-                                                    )}
-                                                  </td>
-                                                  <td className="py-2 text-center w-1/6">
+                                                  </TableCell>
+                                                  <TableCell className="text-center w-1/6">
                                                     <div className="flex gap-1 justify-center">
                                                       {/* Only show View PDF for received documents */}
                                                       {doc.status === "Received" && (
@@ -1192,19 +1332,19 @@ function VendorSelectPageContent() {
                                                         <span className="text-muted-foreground text-sm">-</span>
                                                       )}
                                                     </div>
-                                                  </td>
-                                                </tr>
+                                                  </TableCell>
+                                                </TableRow>
                                               ))}
-                                              <tr>
-                                                <td colSpan={5} className="py-2 text-center">
+                                              <TableRow>
+                                                <TableCell colSpan={4} className="text-center">
                                                   <Button variant="ghost" size="sm" className="text-muted-foreground">
                                                     <Plus className="h-4 w-4 mr-2" />
                                                     Add Document
                                                   </Button>
-                                                </td>
-                                              </tr>
-                                            </tbody>
-                                          </table>
+                                                </TableCell>
+                                              </TableRow>
+                                            </TableBody>
+                                          </Table>
                                         </div>
                                       </div>
                                     </TableCell>
@@ -1256,6 +1396,8 @@ function VendorSelectPageContent() {
                 ?.selectedVendorId
             )?.name
         }
+        analysisData={aiAnalysisData}
+        loading={aiAnalysisLoading}
       />
 
       {/* RFQ Creation Modal */}
@@ -1270,6 +1412,14 @@ function VendorSelectPageContent() {
           });
           setIsRFQModalOpen(false);
         }}
+      />
+
+      {/* RFQ Criteria Modal */}
+      <RFQCriteriaModal
+        isOpen={isCriteriaModalOpen}
+        onClose={() => setIsCriteriaModalOpen(false)}
+        rfqId={criteriaRFQId}
+        onSave={handleCriteriaSave}
       />
     </div>
   );

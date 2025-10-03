@@ -121,9 +121,7 @@ const DocumentUpdateItem: React.FC<DocumentUpdateItemProps> = ({ update }) => {
         </div>
         
         {update.status === 'processing' && (
-          <div className="mt-2">
-            <Progress value={undefined} className="h-1" />
-          </div>
+          <Badge variant="outline" className="text-xs ml-2 text-blue-700 bg-blue-50">Processing</Badge>
         )}
         
         {update.error && (

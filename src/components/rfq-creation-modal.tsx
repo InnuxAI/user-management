@@ -14,6 +14,8 @@ import {
   Users,
   CheckCircle,
   X,
+  Settings,
+  Target,
 } from "lucide-react";
 
 import { MultiStepForm } from "@/components/multi-step-form";
@@ -93,6 +95,17 @@ interface RFQFormData {
   // Project creation fields
   name?: string;
   project_description?: string;
+  // Analysis criteria fields
+  criteria?: string[];
+  additional_prompt?: string;
+  weights?: {
+    price: number;
+    delivery: number;
+    payment_terms: number;
+    freight: number;
+    experience: number;
+    red_flags: number;
+  };
 }
 
 interface Project {
@@ -119,7 +132,7 @@ interface RFQCreationModalProps {
 export function RFQCreationModal({ isOpen, onClose, onSubmit }: RFQCreationModalProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [isNewProject, setIsNewProject] = useState(false);
-  const totalSteps = 4;
+  const totalSteps = 5;
   
   // API data state
   const [projects, setProjects] = useState<Project[]>([]);
@@ -141,6 +154,16 @@ export function RFQCreationModal({ isOpen, onClose, onSubmit }: RFQCreationModal
     deadline: '',
     project_id: '',
     vendor_requirements: [],
+    criteria: ['lowest_price', 'delivery_time', 'payment_terms', 'experience'],
+    additional_prompt: '',
+    weights: {
+      price: 0.30,
+      delivery: 0.25,
+      payment_terms: 0.15,
+      freight: 0.10,
+      experience: 0.15,
+      red_flags: 0.05
+    }
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -254,7 +277,7 @@ export function RFQCreationModal({ isOpen, onClose, onSubmit }: RFQCreationModal
     console.log('Form data:', formData);
     
     if (validateCurrentStep()) {
-      if (currentStep < 4) {
+      if (currentStep < 5) {
         setCurrentStep(currentStep + 1);
         console.log(`Moving to step ${currentStep + 1}`);
       }
@@ -308,7 +331,19 @@ export function RFQCreationModal({ isOpen, onClose, onSubmit }: RFQCreationModal
         }
       }
     } else if (currentStep === 3) {
-      // Step 3: Vendor Requirements
+      // Step 3: Analysis Criteria
+      if (!formData.criteria || formData.criteria.length === 0) {
+        newErrors.criteria = 'Please select at least one analysis criterion';
+      }
+      // Validate weights sum to approximately 1.0
+      if (formData.weights) {
+        const weightsSum = Object.values(formData.weights).reduce((sum, weight) => sum + weight, 0);
+        if (Math.abs(weightsSum - 1.0) > 0.01) {
+          newErrors.weights = 'Weights must sum to 1.0 (100%)';
+        }
+      }
+    } else if (currentStep === 4) {
+      // Step 4: Vendor Requirements
       if (formData.vendor_requirements.length === 0) {
         newErrors.vendor_requirements = 'At least one vendor requirement is needed';
       } else {
@@ -329,7 +364,7 @@ export function RFQCreationModal({ isOpen, onClose, onSubmit }: RFQCreationModal
         }
       }
     }
-    // Step 4 is review & confirm, no validation needed
+    // Step 5 is review & confirm, no validation needed
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -411,6 +446,25 @@ export function RFQCreationModal({ isOpen, onClose, onSubmit }: RFQCreationModal
           const response = await api.rfqs.create(finalData);
           if (response.success) {
             console.log('RFQ created via API:', response.data);
+            
+            // Create analysis criteria if provided
+            if (formData.criteria && formData.criteria.length > 0) {
+              try {
+                const criteriaData = {
+                  rfq_id: formData.rfq_id,
+                  criteria: formData.criteria,
+                  additional_prompt: formData.additional_prompt || '',
+                  weights: formData.weights
+                };
+                
+                const criteriaResponse = await api.rfqCriteria.create(criteriaData);
+                if (criteriaResponse.success) {
+                  console.log('RFQ criteria created:', criteriaResponse.data);
+                }
+              } catch (criteriaError) {
+                console.warn('Failed to create RFQ criteria:', criteriaError);
+              }
+            }
           }
         } catch (apiError) {
           console.warn('RFQ API not available, handling locally:', apiError);
@@ -426,6 +480,16 @@ export function RFQCreationModal({ isOpen, onClose, onSubmit }: RFQCreationModal
           deadline: '',
           project_id: '',
           vendor_requirements: [],
+          criteria: ['lowest_price', 'delivery_time', 'payment_terms', 'experience'],
+          additional_prompt: '',
+          weights: {
+            price: 0.30,
+            delivery: 0.25,
+            payment_terms: 0.15,
+            freight: 0.10,
+            experience: 0.15,
+            red_flags: 0.05
+          }
         });
         setCurrentStep(1);
         setIsNewProject(false);
@@ -439,7 +503,7 @@ export function RFQCreationModal({ isOpen, onClose, onSubmit }: RFQCreationModal
   };
 
   const getNextButtonText = () => {
-    if (currentStep === 4) return "Create RFQ";
+    if (currentStep === 5) return "Create RFQ";
     return "Next Step";
   };
 
@@ -704,8 +768,156 @@ export function RFQCreationModal({ isOpen, onClose, onSubmit }: RFQCreationModal
             </div>
           )}
 
-          {/* Step 3: Vendor Requirements */}
+          {/* Step 3: Analysis Criteria */}
           {currentStep === 3 && (
+            <div className="space-y-8">
+              <div className="flex items-center gap-3 pb-4 border-b">
+                <Target className="h-5 w-5 text-primary" />
+                <h3 className="text-lg font-semibold">Analysis Criteria</h3>
+              </div>
+              
+              <div className="space-y-8">
+                {/* Criteria Selection */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Label className="text-sm font-medium">Evaluation Criteria</Label>
+                    <TooltipIcon text="Select the criteria that should be used to evaluate and compare vendors" />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { value: 'lowest_price', label: 'Lowest Price', desc: 'Most competitive pricing' },
+                      { value: 'delivery_time', label: 'Delivery Time', desc: 'Fastest delivery schedule' },
+                      { value: 'payment_terms', label: 'Payment Terms', desc: 'Favorable payment conditions' },
+                      { value: 'certifications', label: 'Certifications', desc: 'Required certifications and compliance' },
+                      { value: 'freight_costs', label: 'Freight Costs', desc: 'Shipping and logistics costs' },
+                      { value: 'experience', label: 'Experience', desc: 'Vendor track record and expertise' },
+                      { value: 'quality_standards', label: 'Quality Standards', desc: 'Quality control and standards' },
+                      { value: 'compliance', label: 'Compliance', desc: 'Regulatory and legal compliance' }
+                    ].map((criterion) => (
+                      <div key={criterion.value} className="flex items-start space-x-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
+                        <Checkbox
+                          id={criterion.value}
+                          checked={formData.criteria?.includes(criterion.value) || false}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setFormData(prev => ({
+                                ...prev,
+                                criteria: [...(prev.criteria || []), criterion.value]
+                              }));
+                            } else {
+                              setFormData(prev => ({
+                                ...prev,
+                                criteria: (prev.criteria || []).filter(c => c !== criterion.value)
+                              }));
+                            }
+                          }}
+                          className="mt-0.5"
+                        />
+                        <div className="space-y-1">
+                          <Label htmlFor={criterion.value} className="text-sm font-medium cursor-pointer">
+                            {criterion.label}
+                          </Label>
+                          <p className="text-xs text-muted-foreground">{criterion.desc}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {errors.criteria && (
+                    <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 p-3 rounded-md border border-destructive/20">
+                      <AlertCircle className="h-4 w-4 shrink-0" />
+                      <span>{errors.criteria}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Weights Configuration */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Label className="text-sm font-medium">Scoring Weights</Label>
+                    <TooltipIcon text="Adjust the importance of each scoring factor (must sum to 100%)" />
+                  </div>
+                  
+                  <div className="grid gap-4 p-4 rounded-lg border bg-card">
+                    {[
+                      { key: 'price', label: 'Price' },
+                      { key: 'delivery', label: 'Delivery' },
+                      { key: 'payment_terms', label: 'Payment Terms' },
+                      { key: 'freight', label: 'Freight' },
+                      { key: 'experience', label: 'Experience' },
+                      { key: 'red_flags', label: 'Red Flags' }
+                    ].map((weight) => (
+                      <div key={weight.key} className="flex items-center gap-4">
+                        <Label className="w-24 text-sm">{weight.label}</Label>
+                        <div className="flex-1 flex items-center gap-3">
+                          <Input
+                            type="number"
+                            min="0"
+                            max="1"
+                            step="0.01"
+                            value={formData.weights?.[weight.key as keyof typeof formData.weights] || 0}
+                            onChange={(e) => {
+                              const value = parseFloat(e.target.value) || 0;
+                              setFormData(prev => ({
+                                ...prev,
+                                weights: {
+                                  ...prev.weights!,
+                                  [weight.key]: value
+                                }
+                              }));
+                            }}
+                            className="w-20 text-center"
+                          />
+                          <span className="text-sm text-muted-foreground">
+                            ({Math.round((formData.weights?.[weight.key as keyof typeof formData.weights] || 0) * 100)}%)
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                    <div className="pt-2 border-t">
+                      <div className="flex justify-between text-sm">
+                        <span>Total:</span>
+                        <span className={cn(
+                          "font-medium",
+                          Math.abs((Object.values(formData.weights || {}).reduce((sum, w) => sum + w, 0)) - 1.0) > 0.01 
+                            ? "text-destructive" 
+                            : "text-green-600"
+                        )}>
+                          {Math.round((Object.values(formData.weights || {}).reduce((sum, w) => sum + w, 0)) * 100)}%
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {errors.weights && (
+                    <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 p-3 rounded-md border border-destructive/20">
+                      <AlertCircle className="h-4 w-4 shrink-0" />
+                      <span>{errors.weights}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Additional Prompt */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="additional_prompt" className="text-sm font-medium">Additional Instructions</Label>
+                    <TooltipIcon text="Optional additional instructions for AI analysis (e.g., specific requirements, preferences)" />
+                  </div>
+                  <Textarea
+                    id="additional_prompt"
+                    placeholder="e.g., Prioritize vendors with ISO certifications, Consider sustainability practices..."
+                    value={formData.additional_prompt || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, additional_prompt: e.target.value }))}
+                    className="min-h-[100px]"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Step 4: Vendor Requirements */}
+          {currentStep === 4 && (
             <div className="space-y-6">
               <div className="flex items-center gap-3 pb-4 border-b">
                 <Users className="h-5 w-5 text-primary" />
@@ -848,8 +1060,8 @@ export function RFQCreationModal({ isOpen, onClose, onSubmit }: RFQCreationModal
             </div>
           )}
 
-          {/* Step 4: Review & Confirm */}
-          {currentStep === 4 && (
+          {/* Step 5: Review & Confirm */}
+          {currentStep === 5 && (
             <div className="space-y-6">
               <div className="flex items-center gap-3 pb-4 border-b pt-4">
                 <CheckCircle className="h-5 w-5 text-green-500" />
@@ -925,6 +1137,43 @@ export function RFQCreationModal({ isOpen, onClose, onSubmit }: RFQCreationModal
                       })}
                     </div>
                   </div>
+                  
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium text-muted-foreground">Analysis Criteria</Label>
+                    <div className="space-y-3">
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-2">Selected Criteria:</p>
+                        <div className="flex flex-wrap gap-2">
+                          {(formData.criteria || []).map(criterion => (
+                            <Badge key={criterion} variant="outline" className="text-xs">
+                              {criterion.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      {formData.weights && (
+                        <div>
+                          <p className="text-sm text-muted-foreground mb-2">Scoring Weights:</p>
+                          <div className="grid grid-cols-2 gap-2 text-xs">
+                            {Object.entries(formData.weights).map(([key, value]) => (
+                              <div key={key} className="flex justify-between p-2 rounded border bg-muted/50">
+                                <span className="capitalize">{key.replace(/_/g, ' ')}</span>
+                                <span className="font-medium">{Math.round(value * 100)}%</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {formData.additional_prompt && (
+                        <div>
+                          <p className="text-sm text-muted-foreground mb-2">Additional Instructions:</p>
+                          <p className="text-sm p-3 rounded-lg border bg-muted/50">{formData.additional_prompt}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
 
@@ -951,7 +1200,7 @@ export function RFQCreationModal({ isOpen, onClose, onSubmit }: RFQCreationModal
                 Back
               </Button>
             )}
-            <Button onClick={currentStep === 4 ? handleSubmit : handleNext} className="px-6">
+            <Button onClick={currentStep === 5 ? handleSubmit : handleNext} className="px-6">
               {getNextButtonText()}
             </Button>
           </div>
