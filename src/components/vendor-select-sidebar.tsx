@@ -9,7 +9,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Home, Settings } from "lucide-react";
+import { Home, ChevronUp, User, Settings } from "lucide-react";
+import { LordIcon, LORDICON_URLS } from "@/components/ui/lord-icon";
 import Link from "next/link";
 
 interface RFQDocument {
@@ -61,35 +62,17 @@ export function VendorSelectSidebar({
           
           <Button asChild className="w-full justify-start" variant="ghost">
             <Link href="/vendor-select/vendors" className="flex items-center gap-2">
-              <span>🏢</span>
+              <LordIcon src={LORDICON_URLS.vendor} size={16} trigger="hover" />
               Vendor Manager
             </Link>
           </Button>
           
           <Button asChild className="w-full justify-start" variant="ghost">
             <Link href="/vendor-select/documents" className="flex items-center gap-2">
-              <span>📄</span>
+              <LordIcon src={LORDICON_URLS.documents} size={16} trigger="hover" />
               Document Manager
             </Link>
           </Button>
-        </div>
-
-        <div>
-          <h2 className="text-lg font-semibold mb-2">Vendor Selector</h2>
-          <div className="text-sm text-muted-foreground space-y-1">
-            <div className="flex items-center gap-2">
-              <span>📋</span>
-              <span>Lists All documents</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span>📁</span>
-              <span>Grouped by RFQ ID</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span>🔄</span>
-              <span>State: (Waiting/Processed)</span>
-            </div>
-          </div>
         </div>
       </div>
 

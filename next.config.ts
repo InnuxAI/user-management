@@ -10,7 +10,16 @@ const nextConfig: NextConfig = {
     // number of pages that should be kept simultaneously without being disposed
     pagesBufferLength: 2,
   },
-  devIndicators: false
+  devIndicators: false,
+  // API rewrites to proxy to backend
+  async rewrites() {
+    return [
+      {
+        source: '/api/v1/:path*',
+        destination: 'http://localhost:8000/api/v1/:path*',
+      },
+    ];
+  },
 };
 
 export default nextConfig;

@@ -25,6 +25,7 @@ import { APITest } from "@/components/api-test";
 import { toast } from "sonner";
 import { ChevronRight, ChevronDown, Search, Filter, Download, Plus, X, Brain, Wifi, Settings } from "lucide-react";
 import Link from "next/link";
+import { LordIcon, LORDICON_URLS } from "@/components/ui/lord-icon";
 
 interface VendorDetail {
   id: string;
@@ -133,30 +134,30 @@ function VendorSelectPageContent() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        console.log('🔄 Fetching data from API...');
+        console.log('[API] Fetching data...');
         
         // Add a small delay to see the loading state
         await new Promise(resolve => setTimeout(resolve, 500));
         
         // Fetch projects first
         const projectsResponse = await api.projects.list();
-        console.log('📊 Projects Response:', projectsResponse);
+        console.log('[PROJECTS] Response:', projectsResponse);
         
         if (!projectsResponse.success) {
           throw new Error('Failed to fetch projects');
         }
         
         const projects = projectsResponse.data;
-        console.log('📋 Found projects:', projects);
+        console.log('[PROJECTS] Found:', projects);
         
         // For each project, fetch its RFQs and build the full structure
         const transformedProjects: ProjectData[] = await Promise.all(
           projects.map(async (project: any) => {
-            console.log(`🏗️ Processing project: ${project.id}`);
+            console.log(`[PROJECT] Processing: ${project.id}`);
             try {
               // Fetch RFQs for this project
               const rfqsResponse = await api.projects.getRFQs(project.id);
-              console.log(`📋 RFQs for ${project.id}:`, rfqsResponse);
+              console.log(`[RFQS] For ${project.id}:`, rfqsResponse);
               
               if (!rfqsResponse.success) {
                 console.warn(`Failed to fetch RFQs for project ${project.id}`);
@@ -168,15 +169,15 @@ function VendorSelectPageContent() {
               }
               
               const rfqs = rfqsResponse.data;
-              console.log(`📄 RFQs data for ${project.id}:`, rfqs);
+              console.log(`[RFQS] Data for ${project.id}:`, rfqs);
               
               // For each RFQ, fetch vendors and status
               const transformedRFQs = await Promise.all(
                 rfqs.map(async (rfq: any) => {
                   try {
-                    console.log(`🏢 Fetching vendors for RFQ ${rfq.rfq_id || rfq.id}...`);
+                    console.log(`[VENDORS] Fetching for RFQ ${rfq.rfq_id || rfq.id}...`);
                     const vendorsResponse = await api.rfqs.getVendors(rfq.rfq_id || rfq.id);
-                    console.log(`👥 Vendors response for ${rfq.rfq_id || rfq.id}:`, vendorsResponse);
+                    console.log(`[VENDORS] Response for ${rfq.rfq_id || rfq.id}:`, vendorsResponse);
                     
                     const vendors = vendorsResponse.success 
                       ? vendorsResponse.data.map((vendor: any) => ({
@@ -207,7 +208,7 @@ function VendorSelectPageContent() {
                         }))
                       : [];
                       
-                    console.log(`✨ Transformed vendors for ${rfq.rfq_id || rfq.id}:`, vendors);
+                    console.log(`[VENDORS] Transformed for ${rfq.rfq_id || rfq.id}:`, vendors);
                       
                     return {
                       id: rfq.rfq_id || rfq.id,
@@ -228,7 +229,7 @@ function VendorSelectPageContent() {
                 name: project.name,
                 rfqs: transformedRFQs
               };
-              console.log(`✅ Final project structure for ${project.id}:`, result);
+              console.log(`[PROJECT] Final structure for ${project.id}:`, result);
               return result;
               
             } catch (error) {
@@ -242,17 +243,17 @@ function VendorSelectPageContent() {
           })
         );
         
-        console.log('🎉 All transformed data:', transformedProjects);
+        console.log('[DATA] All transformed:', transformedProjects);
         setProjectsData(transformedProjects);
         setLoading(false);
         
       } catch (error) {
-        console.error('❌ API fetch failed:', error);
+        console.error('[ERROR] API fetch failed:', error);
         handleApiError(error, 'Failed to load vendor data');
         setLoading(false);
         
         // Fall back to mock data if API fails
-        console.log('🔄 Falling back to mock data...');
+        console.log('[FALLBACK] Using mock data...');
         setProjectsData(mockProjectsData);
       }
     };
@@ -577,10 +578,25 @@ function VendorSelectPageContent() {
   };
 
   // Filter functions with proper logic
-  const activeFiltersCount = Object.values(filters).filter(Boolean).length;
+  const activeFiltersCount = Object.values(filters).filter(Boolean).length + (searchQuery ? 1 : 0);
 
   const filteredData = projectsData.map(project => {
     const filteredRFQs = project.rfqs.filter(rfq => {
+      // Global search filter (searches across project name, RFQ ID, and vendor names)
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        const matchesProject = project.name.toLowerCase().includes(query) || 
+                               project.id.toLowerCase().includes(query);
+        const matchesRFQ = rfq.id.toLowerCase().includes(query);
+        const matchesVendor = rfq.vendors.some(vendor => 
+          vendor.name.toLowerCase().includes(query)
+        );
+        
+        if (!matchesProject && !matchesRFQ && !matchesVendor) {
+          return false;
+        }
+      }
+      
       // Project ID filter
       if (filters.projectId && !project.id.toLowerCase().includes(filters.projectId.toLowerCase())) {
         return false;
@@ -626,6 +642,7 @@ function VendorSelectPageContent() {
 
   const clearAllFilters = () => {
     setFilters({ projectId: "", rfqId: "", vendorStatus: "", documentStatus: "" });
+    setSearchQuery("");
   };
 
   const handleSendToErp = () => {
@@ -672,6 +689,55 @@ function VendorSelectPageContent() {
       console.error(`Failed to fetch AI analysis for ${rfqId}:`, error);
       toast.error('AI Analysis Error', {
         description: 'Failed to load AI analysis report. Please try again later.'
+      });
+    } finally {
+      setAiAnalysisLoading(false);
+    }
+  };
+
+  const handleDownloadReport = async (rfqId: string) => {
+    try {
+      setAiAnalysisLoading(true);
+      
+      // Call the new PDF download endpoint
+      const response = await fetch(`/api/v1/rfqs/${rfqId}/ai-analysis/download-pdf`);
+      
+      if (response.ok) {
+        // Get the filename from response headers
+        const contentDisposition = response.headers.get('content-disposition');
+        let filename = `AI_Analysis_Report_${rfqId}_${new Date().toISOString().split('T')[0]}.pdf`;
+        
+        if (contentDisposition) {
+          const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+          if (filenameMatch) {
+            filename = filenameMatch[1];
+          }
+        }
+        
+        // Create blob from response and download
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        
+        toast.success('PDF Report Downloaded', {
+          description: `AI analysis report for ${rfqId} has been downloaded as PDF successfully.`
+        });
+      } else {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        toast.error('Download Failed', {
+          description: errorData.error || 'No AI analysis report found for this RFQ. Please generate the analysis first.'
+        });
+      }
+    } catch (error) {
+      console.error(`Failed to download AI analysis PDF for ${rfqId}:`, error);
+      toast.error('Download Error', {
+        description: 'Failed to download AI analysis report. Please try again later.'
       });
     } finally {
       setAiAnalysisLoading(false);
@@ -801,8 +867,16 @@ function VendorSelectPageContent() {
                       placeholder="Search projects, RFQs, or vendors..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10"
+                      className="pl-10 pr-10"
                     />
+                    {searchQuery && (
+                      <button
+                        onClick={() => setSearchQuery("")}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground hover:text-foreground"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    )}
                   </div>
                   <Popover open={isFilterOpen} onOpenChange={setIsFilterOpen}>
                     <PopoverTrigger asChild>
@@ -1065,7 +1139,12 @@ function VendorSelectPageContent() {
                                 );
                               } else if (reportsGenerated > 0) {
                                 // Single RFQ with report generated
-                                return <Badge className="bg-blue-100 text-blue-800">📊 Report Generated</Badge>;
+                                return (
+                                  <Badge className="bg-blue-100 text-blue-800 flex items-center gap-1">
+                                    <LordIcon src={LORDICON_URLS.report} size={12} trigger="hover" />
+                                    Report Generated
+                                  </Badge>
+                                );
                               } else {
                                 // Single RFQ or no RFQs, no reports
                                 return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">Pending Selection</Badge>;
@@ -1111,7 +1190,10 @@ function VendorSelectPageContent() {
                                 {rfq.selectedVendorId ? (
                                   <Badge className="bg-green-100 text-green-800">✓ Selected</Badge>
                                 ) : aiAnalysisAvailability.get(rfq.id) ? (
-                                  <Badge className="bg-blue-100 text-blue-800">📊 Report Generated</Badge>
+                                  <Badge className="bg-blue-100 text-blue-800 flex items-center gap-1">
+                                    <LordIcon src={LORDICON_URLS.report} size={12} trigger="hover" />
+                                    Report Generated
+                                  </Badge>
                                 ) : (
                                   <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">Pending Selection</Badge>
                                 )}
@@ -1151,6 +1233,34 @@ function VendorSelectPageContent() {
                                   <TooltipProvider>
                                     <Tooltip>
                                       <TooltipTrigger asChild>
+                                        <div>
+                                          <Button 
+                                            variant="outline" 
+                                            size="sm"
+                                            disabled={!aiAnalysisAvailability.get(rfq.id) || aiAnalysisLoading}
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              handleDownloadReport(rfq.id);
+                                            }}
+                                            className={`h-8 ${!aiAnalysisAvailability.get(rfq.id) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                          >
+                                            <Download className="h-4 w-4" />
+                                          </Button>
+                                        </div>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>
+                                          {aiAnalysisAvailability.get(rfq.id) 
+                                            ? 'Download AI analysis report as PDF' 
+                                            : 'AI Analysis Required for Download'}
+                                        </p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                  
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
                                         <Button 
                                           variant="outline" 
                                           size="sm"
@@ -1179,7 +1289,7 @@ function VendorSelectPageContent() {
                                       }}
                                       className="bg-blue-600 hover:bg-blue-700"
                                     >
-                                      📤 Send to ERP
+                                      Send to ERP
                                     </Button>
                                   )}
                                 </div>

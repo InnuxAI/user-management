@@ -1,7 +1,9 @@
 // Test API connectivity directly
 "use client";
 
-import { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { api } from '@/lib/api';
+import { LordIcon, LORDICON_URLS } from "@/components/ui/lord-icon";
 
 export function APITest() {
   const [apiStatus, setApiStatus] = useState('Testing...');
@@ -11,20 +13,20 @@ export function APITest() {
   useEffect(() => {
     const testAPI = async () => {
       try {
-        console.log('🧪 Testing API connectivity...');
+        console.log('[TEST] API connectivity...');
         
         // Test health endpoint first
         const healthResponse = await fetch('http://localhost:8000/api/v1/health');
         const healthData = await healthResponse.json();
-        console.log('❤️ Health check:', healthData);
+        console.log('[HEALTH] Check:', healthData);
 
         if (healthResponse.ok) {
-          setApiStatus('Backend connected ✅');
+          setApiStatus('Backend connected ✓');
           
           // Test projects endpoint
           const projectsResponse = await fetch('http://localhost:8000/api/v1/projects');
           const projectsData = await projectsResponse.json();
-          console.log('📊 Projects data:', projectsData);
+          console.log('[PROJECTS] Data:', projectsData);
           
           if (projectsResponse.ok) {
             setProjects(projectsData);
@@ -36,10 +38,10 @@ export function APITest() {
         }
         
       } catch (error) {
-        console.error('❌ API test failed:', error);
+        console.error('[ERROR] API test failed:', error);
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         setError(errorMessage);
-        setApiStatus('Backend connection failed ❌');
+        setApiStatus('Backend connection failed ✗');
       }
     };
 
@@ -48,7 +50,10 @@ export function APITest() {
 
   return (
     <div className="p-4 border rounded-lg bg-slate-50 mb-4">
-      <h3 className="font-bold mb-2">🔧 API Connectivity Test</h3>
+      <h3 className="font-bold mb-2 flex items-center gap-2">
+        <LordIcon src={LORDICON_URLS.settings} size={20} trigger="hover" />
+        API Connectivity Test
+      </h3>
       <p><strong>Status:</strong> {apiStatus}</p>
       
       {error && (
