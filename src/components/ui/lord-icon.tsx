@@ -44,7 +44,7 @@ interface LordIconProps {
 export const LordIcon: React.FC<LordIconProps> = ({
   src,
   trigger = 'hover',
-  colors,
+  colors = "primary:#ffffff,secondary:#f8f9fa",
   style,
   className,
   state,
@@ -89,13 +89,13 @@ export const LORDICON_URLS = {
 
   // Documents & Files
   document: "https://cdn.lordicon.com/nocovwne.json", // Document/File
-  documents: "https://cdn.lordicon.com/jjoolpwc.json", // Multiple documents
+  documents: "https://cdn.lordicon.com/kydcudfv.json", // Multiple documents
   pdf: "https://cdn.lordicon.com/ogbpthqd.json", // PDF file
 
   // Charts & Analytics
   chart: "https://cdn.lordicon.com/qhgmphtg.json", // Chart/Analytics
   analytics: "https://cdn.lordicon.com/rjzlnunf.json", // Analytics dashboard
-  report: "https://cdn.lordicon.com/gqzfzudq.json", // Report
+  report: "https://cdn.lordicon.com/ejurburo.json", // Report
 
   // User & People
   user: "https://cdn.lordicon.com/bhfjfgqf.json", // User profile
@@ -116,6 +116,8 @@ export const LORDICON_URLS = {
   success: "https://cdn.lordicon.com/oqdmuxru.json", // Success/Check
   error: "https://cdn.lordicon.com/akqsdstj.json", // Error/Warning
   loading: "https://cdn.lordicon.com/msoeawqm.json", // Loading spinner
+  pending: "https://cdn.lordicon.com/kiqyrejq.json",
+  wifi: "https://cdn.lordicon.com/shquqxad.json",
 
   // Tools & Actions
   edit: "https://cdn.lordicon.com/wuvorxbv.json", // Edit/Pencil

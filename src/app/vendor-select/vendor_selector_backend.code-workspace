@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": "../../../../vendor_selector_backend"
+		},
+		{
+			"path": "../../.."
+		}
+	],
+	"settings": {}
+}

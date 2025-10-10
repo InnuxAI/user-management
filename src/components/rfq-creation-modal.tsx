@@ -71,6 +71,7 @@ const TooltipIcon = ({ text }: { text: string }) => (
 // Import API functions
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { useSession } from "next-auth/react";
 
 interface DocumentType {
   id: string;
@@ -130,6 +131,8 @@ interface RFQCreationModalProps {
 }
 
 export function RFQCreationModal({ isOpen, onClose, onSubmit }: RFQCreationModalProps) {
+  const { data: session } = useSession();
+  
   const [currentStep, setCurrentStep] = useState(1);
   const [isNewProject, setIsNewProject] = useState(false);
   const totalSteps = 5;
@@ -417,7 +420,8 @@ export function RFQCreationModal({ isOpen, onClose, onSubmit }: RFQCreationModal
           try {
             const projectResponse = await api.projects.create({
               name: formData.name,
-              description: formData.project_description || ''
+              description: formData.project_description || '',
+              user_id: session?.user?.id  // Add user_id for RBAC
             });
             if (projectResponse.success) {
               projectId = projectResponse.data.project_id;
@@ -434,6 +438,7 @@ export function RFQCreationModal({ isOpen, onClose, onSubmit }: RFQCreationModal
         const finalData = {
           ...formData,
           project_id: projectId,
+          user_id: session?.user?.id,  // Add user_id for RBAC
           created_at: new Date().toISOString(),
           status: 'draft',
           updated_at: new Date().toISOString(),

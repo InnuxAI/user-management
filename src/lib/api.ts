@@ -1,5 +1,6 @@
 // API service for VendorSelector backend integration
 import { toast } from 'sonner';
+import { getSession } from 'next-auth/react';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
 
@@ -29,10 +30,16 @@ async function apiRequest<T = any>(
   try {
     const url = `${API_BASE_URL}${endpoint}`;
     
+    // Get user session for authentication
+    const session = await getSession();
+    
     const defaultOptions: RequestInit = {
       headers: {
         'Content-Type': 'application/json',
-        // Add auth headers here when needed
+        // Add user authentication header if session exists
+        ...(session?.user?.id && {
+          'X-User-ID': session.user.id
+        }),
         ...(options.headers || {})
       },
       ...options

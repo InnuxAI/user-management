@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Wifi, WifiOff, AlertCircle, Loader2 } from 'lucide-react';
 import { useRealTime } from '@/contexts/RealTimeContext';
+import { LordIcon, LORDICON_URLS } from '@/components/ui/lord-icon';
 
 interface ConnectionStatusProps {
   showText?: boolean;
@@ -18,7 +19,8 @@ export const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
   const getStatusIcon = () => {
     switch (connectionState) {
       case 'connected':
-        return <Wifi className="h-3 w-3 text-green-600" />;
+        // return <Wifi className="h-3 w-3 text-green-600" />;
+        return <LordIcon src={LORDICON_URLS.wifi} size={12} trigger="hover" colors="primary:green"/>
       case 'connecting':
         return <Loader2 className="h-3 w-3 text-blue-600 animate-spin" />;
       case 'error':
