@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 
+
 const nextConfig: NextConfig = {
   /* config options here */
   reactStrictMode: true,
@@ -13,10 +14,11 @@ const nextConfig: NextConfig = {
   devIndicators: false,
   // API rewrites to proxy to backend
   async rewrites() {
+    const fastapiUrl = process.env.FASTAPI_URL || 'http://localhost:8001';
     return [
       {
         source: '/api/v1/:path*',
-        destination: 'http://localhost:8000/api/v1/:path*',
+        destination: `${fastapiUrl}/api/v1/:path*`,
       },
     ];
   },

@@ -2,7 +2,7 @@
 import { toast } from 'sonner';
 import { getSession } from 'next-auth/react';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+const API_BASE_URL = process.env.FASTAPI_URL || 'http://localhost:8001/api/v1';
 
 interface APIResponse<T = any> {
   success: boolean;

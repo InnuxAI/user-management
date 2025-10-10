@@ -94,7 +94,7 @@ export const useWebSocket = (
       // Create WebSocket URL (handle both HTTP and HTTPS)
       const wsUrl = url.startsWith('ws') 
         ? url 
-        : `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.hostname}:8000${url}`;
+        : `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.hostname}:8001${url}`;
       
       console.log('Attempting WebSocket connection to:', wsUrl);
       wsRef.current = new WebSocket(wsUrl);

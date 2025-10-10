@@ -9,14 +9,14 @@ export function APITest() {
   const [apiStatus, setApiStatus] = useState('Testing...');
   const [projects, setProjects] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
-
+  const fastapiUrl = process.env.FASTAPI_URL || "http://localhost:8001";
   useEffect(() => {
     const testAPI = async () => {
       try {
         console.log('[TEST] API connectivity...');
         
         // Test health endpoint first
-        const healthResponse = await fetch('http://localhost:8000/api/v1/health');
+        const healthResponse = await fetch(`${fastapiUrl}/api/v1/health`);
         const healthData = await healthResponse.json();
         console.log('[HEALTH] Check:', healthData);
 
@@ -24,7 +24,7 @@ export function APITest() {
           setApiStatus('Backend connected ✓');
           
           // Test projects endpoint
-          const projectsResponse = await fetch('http://localhost:8000/api/v1/projects');
+          const projectsResponse = await fetch(`${fastapiUrl}/api/v1/projects`);
           const projectsData = await projectsResponse.json();
           console.log('[PROJECTS] Data:', projectsData);
           
