@@ -14,7 +14,7 @@ const nextConfig: NextConfig = {
   devIndicators: false,
   // API rewrites to proxy to backend
   async rewrites() {
-    const fastapiUrl = process.env.FASTAPI_URL || 'http://localhost:8001';
+    const fastapiUrl = process.env.NEXT_PUBLIC_FASTAPI_URL || 'http://localhost:8001';
     return [
       {
         source: '/api/v1/:path*',

@@ -770,7 +770,7 @@ function VendorSelectPageContent() {
 
   const handleDocumentPreview = async (document: any) => {
     try {
-      const API_BASE_URL = process.env.FASTAPI_URL || 'http://localhost:8001';
+      const API_BASE_URL = process.env.NEXT_PUBLIC_FASTAPI_URL || 'http://localhost:8001';
       
       // Use the new streaming endpoint that handles Azure authentication
       let streamUrl = '';
@@ -808,7 +808,7 @@ function VendorSelectPageContent() {
       }
 
       const document = vendor.documents[docIndex];
-      const API_BASE_URL = process.env.FASTAPI_URL || 'http://localhost:8001';
+      const API_BASE_URL = process.env.NEXT_PUBLIC_FASTAPI_URL || 'http://localhost:8001';
       
       const endpoint = action === 'accept' ? 'approve' : 'reject';
       const response = await fetch(`${API_BASE_URL}/api/v1/rfqs/${rfqId}/vendors/${vendorId}/documents/${document.document_id}/${endpoint}`, {

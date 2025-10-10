@@ -9,7 +9,7 @@ export function APITest() {
   const [apiStatus, setApiStatus] = useState('Testing...');
   const [projects, setProjects] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
-  const fastapiUrl = process.env.FASTAPI_URL || "http://localhost:8001";
+  const fastapiUrl = process.env.NEXT_PUBLIC_FASTAPI_URL || "http://localhost:8001";
   useEffect(() => {
     const testAPI = async () => {
       try {

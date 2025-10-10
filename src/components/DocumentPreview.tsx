@@ -55,7 +55,7 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
 
   const handlePreview = async () => {
     try {
-      const API_BASE_URL = process.env.FASTAPI_URL || 'http://localhost:8001';
+      const API_BASE_URL = process.env.NEXT_PUBLIC_FASTAPI_URL || 'http://localhost:8001';
       
       // Use the new streaming endpoint that handles Azure authentication
       let streamUrl = '';
@@ -89,7 +89,7 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
 
   const handleDownload = async () => {
     try {
-      const API_BASE_URL = process.env.FASTAPI_URL || 'http://localhost:8001';
+      const API_BASE_URL = process.env.NEXT_PUBLIC_FASTAPI_URL || 'http://localhost:8001';
       
       // Use the streaming endpoint for download
       let streamUrl = '';
