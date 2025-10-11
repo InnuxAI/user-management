@@ -62,10 +62,10 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
       
       if (document.document_id) {
         // Use document ID for streaming endpoint (preferred)
-        streamUrl = `${API_BASE_URL}/api/v1/documents/${document.document_id}/stream`;
+        streamUrl = `${API_BASE_URL}/documents/${document.document_id}/stream`;
       } else if (document.blob_name) {
         // Fallback to blob name streaming endpoint
-        streamUrl = `${API_BASE_URL}/api/v1/documents/by-blob/${encodeURIComponent(document.blob_name)}/stream`;
+        streamUrl = `${API_BASE_URL}/documents/by-blob/${encodeURIComponent(document.blob_name)}/stream`;
       } else {
         throw new Error('No document ID or blob name available for preview');
       }
@@ -95,9 +95,9 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
       let streamUrl = '';
       
       if (document.document_id) {
-        streamUrl = `${API_BASE_URL}/api/v1/documents/${document.document_id}/stream`;
+        streamUrl = `${API_BASE_URL}/documents/${document.document_id}/stream`;
       } else if (document.blob_name) {
-        streamUrl = `${API_BASE_URL}/api/v1/documents/by-blob/${encodeURIComponent(document.blob_name)}/stream`;
+        streamUrl = `${API_BASE_URL}/documents/by-blob/${encodeURIComponent(document.blob_name)}/stream`;
       } else {
         throw new Error('No document ID or blob name available for download');
       }
